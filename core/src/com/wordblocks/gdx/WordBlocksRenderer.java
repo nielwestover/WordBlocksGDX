@@ -17,7 +17,7 @@ import helpers.MyShapeRenderer;
 /**
  * Created by a2558 on 2/21/2016.
  */
-public class WordBlocksDrawer {
+public class WordBlocksRenderer {
     private float width;
     private float height;
 
@@ -28,9 +28,10 @@ public class WordBlocksDrawer {
     Camera camera;
     MyShapeRenderer shapeRenderer = new MyShapeRenderer();
     FPSLogger logger;
+    GameScreen Overlord;
 
-    public WordBlocksDrawer(float width, float height, Camera cam) {
-
+    public WordBlocksRenderer(float width, float height, Camera cam, GameScreen overlord) {
+        Overlord = overlord;
         logger = new FPSLogger();
         this.width = width;
         this.height = height;
@@ -61,9 +62,12 @@ public class WordBlocksDrawer {
     DrawStates drawState = DrawStates.INIT;
 
     public void init(){
+
         drawState = DrawStates.INIT;
     }
-    public void draw(Game game) {
+    Game game;
+    public void draw(WordBlocksController wbc) {
+        game = wbc.game;
         if (game == null)
             return;
         switch(drawState)

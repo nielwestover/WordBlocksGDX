@@ -1,16 +1,13 @@
 package com.wordblocks.gdx;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -26,8 +23,8 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
     final int FRAMES_PER_SECOND = 60;
     final int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
 
-    private WordBlocksDrawer wordBlocksDrawer;
-    private WordBlocksUpdater wordBlocksUpdater;
+    public WordBlocksRenderer wordBlocksRenderer;
+    public WordBlocksController wordBlocksController;
     private float width, height;
     ShapeRenderer shapeRenderer;
     Viewport viewport;
@@ -71,13 +68,13 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
 
         t = TimeUtils.millis();
         if (t >= nextGameTick) {
-            wordBlocksUpdater.update();
+            wordBlocksController.update();
             //Log.d("Update: ", String.valueOf(t));
             nextGameTick = t + SKIP_TICKS;
         }
 
         //Log("Draw: ", String.valueOf(t));
-        wordBlocksDrawer.draw(wordBlocksUpdater.game);
+        wordBlocksRenderer.draw(wordBlocksController);
     }
 
     boolean first = true;
@@ -89,9 +86,9 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         this.width = width;
         this.height = height;
-        wordBlocksUpdater = new WordBlocksUpdater(worldWidth, worldHeight);
-        wordBlocksDrawer = new WordBlocksDrawer(worldWidth, worldHeight, camera);
-        wordBlocksUpdater.update();//do initial update to set up board, so game is not null for the next call
+        wordBlocksController = new WordBlocksController(worldWidth, worldHeight, this);
+        wordBlocksRenderer = new WordBlocksRenderer(worldWidth, worldHeight, camera, this);
+        wordBlocksController.update();//do initial update to set up board, so game is not null for the next call
         first = false;
     }
 
@@ -108,13 +105,13 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
     @Override
     public boolean touchDown (int x, int y, int pointer, int button) {
         Vector3 screen = camera.unproject(new Vector3(x, y, 0), viewport.getScreenX(), viewport.getScreenY(), viewport.getScreenWidth(), viewport.getScreenHeight());
-        wordBlocksUpdater.fingerPress = true;
-        wordBlocksUpdater.X = screen.x;
-        wordBlocksUpdater.Y = screen.y;
+        wordBlocksController.fingerPress = true;
+        wordBlocksController.X = screen.x;
+        wordBlocksController.Y = screen.y;
 
-        if (wordBlocksUpdater.game.refresh.contains(screen.x, screen.y)) {
-            wordBlocksUpdater.init();
-            wordBlocksDrawer.init();
+        if (wordBlocksController.game.refresh.contains(screen.x, screen.y)) {
+            //automatically calls init on the renderer
+            wordBlocksController.init();
         }
 
 
@@ -123,17 +120,17 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
 
     @Override
     public boolean touchUp (int x, int y, int pointer, int button) {
-        wordBlocksUpdater.fingerPress = false;
+        wordBlocksController.fingerPress = false;
         return true;
     }
 
     @Override
     public boolean touchDragged (int x, int y, int pointer) {
-        wordBlocksUpdater.fingerMoving = true;
+        wordBlocksController.fingerMoving = true;
         Vector3 screen = camera.unproject(new Vector3(x, y, 0), viewport.getScreenX(), viewport.getScreenY(), viewport.getScreenWidth(), viewport.getScreenHeight());
-        wordBlocksUpdater.fingerPress = true;
-        wordBlocksUpdater.X = screen.x;
-        wordBlocksUpdater.Y = screen.y;
+        wordBlocksController.fingerPress = true;
+        wordBlocksController.X = screen.x;
+        wordBlocksController.Y = screen.y;
         return true;
     }
 }

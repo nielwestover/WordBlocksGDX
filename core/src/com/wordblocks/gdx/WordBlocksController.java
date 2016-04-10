@@ -6,7 +6,7 @@ import helpers.IntPair;
 /**
  * Created by a2558 on 2/21/2016.
  */
-public class WordBlocksUpdater {
+public class WordBlocksController {
 
     public boolean fingerPress = false;
     public boolean fingerMoving = false;
@@ -27,8 +27,10 @@ public class WordBlocksUpdater {
         GAME_OVER
     }
     public float width, height;
+    GameScreen Overlord;
 
-    public WordBlocksUpdater(float width, float height){
+    public WordBlocksController(float width, float height, GameScreen overlord){
+        Overlord = overlord;
         this.width = width;
         this.height = height;
     }
@@ -44,6 +46,9 @@ public class WordBlocksUpdater {
                 game = new Game(MyApplication.getCurLevel());
                 game.refresh = new Rectangle(width - 50, 0, 50, 50);
                 initGameDimensions();
+
+                //always reinitialize the renderer when starting over
+                Overlord.wordBlocksRenderer.init();
                 gameState = GameStates.WAIT_FOR_PRESS;
                 break;
             case WAIT_FOR_PRESS:
@@ -82,8 +87,9 @@ public class WordBlocksUpdater {
                 break;
             case CHECK_LEVEL_FINISHED:
                 if (game.blocksLeft() == 0) {
-                    if (MyApplication.incrementCurLevel())
+                    if (MyApplication.incrementCurLevel()) {
                         gameState = GameStates.INIT;
+                    }
                     else
                         gameState = GameStates.GAME_OVER;
                 }
