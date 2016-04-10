@@ -1,0 +1,39 @@
+[
+  {
+    "board": "ESCPCPEAAAELCEPA",
+    "answers": [
+      "PALACE",
+      "PEACE",
+      "SPACE"
+    ]
+  },
+  {
+    "board": "GABBGNAECARLTABB",
+    "answers": [
+      "CAB",
+      "BANG",
+      "BAT",
+      "GARBLE"
+    ]
+  },
+  {
+    "board": "RCRLEACCAPBAHSAESTTTARTAE",
+    "answers": [
+      "CASTLE",
+      "CRAB",
+      "CRATE",
+      "EARTH",
+      "PASTA"
+    ]
+  },
+  {
+    "board": "EUGHTDUGNOOMNAHGUUGTCOCUT",
+    "answers": [
+      "CAT",
+      "COUGH",
+      "DOUGHNUT",
+      "GUM",
+      "TONGUE"
+    ]
+  }
+]
