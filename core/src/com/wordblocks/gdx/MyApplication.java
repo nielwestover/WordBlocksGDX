@@ -18,7 +18,7 @@ public class MyApplication {
     private static List<Level> levels = new ArrayList<Level>();
 
     private static Level curLevel;
-    public static int curLevelIndex = 5;
+    public static int curLevelIndex = 50;
 
     public static List<Level> levels() {
         if (levels == null || levels.size() == 0) {

@@ -2,8 +2,12 @@ package com.wordblocks.gdx;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 public class Block extends DrawableObject {
     char letter;
@@ -14,27 +18,35 @@ public class Block extends DrawableObject {
     boolean found;
     Color blockColor = Color.WHITE.cpy();
     Color charColor = Color.BLACK.cpy();
+    float blockScale;
+    Vector2 center;
 
-    public Block(){
+    public Block() {
         curState = AnimState.ANIM_START;
+        blockScale = 1;
     }
+
     public static enum AnimState {
         ANIM_START,
         NORMAL,
         NORMALTOSELECTED,
+        NORMALTOSELECTED_ANIM,
         SELECTED,
         FALLING,
         SELECTEDTONORMAL,
+        SELECTEDTONORMAL_ANIM,
         TOFOUND,
         FOUND
 
     }
 
     private AnimState curState;
-    public AnimState getCurState(){
+
+    public AnimState getCurState() {
         return curState;
     }
-    public void setCurState(AnimState state){
+
+    public void setCurState(AnimState state) {
         curState = state;
     }
 
@@ -50,6 +62,9 @@ public class Block extends DrawableObject {
         return false;
     }
 
+    float maxInterpSteps = 20;
+    float interpSteps = 0;
+
     @Override
     void update() {
         switch (curState) {
@@ -59,13 +74,26 @@ public class Block extends DrawableObject {
             case NORMAL:
                 blockColor = Color.WHITE.cpy();
                 charColor = Color.BLACK.cpy();
-                if (selected)
+                if (selected) {
                     curState = AnimState.NORMALTOSELECTED;
+                    update();
+                }
                 break;
             case NORMALTOSELECTED:
-                if (!blockColor.equals(Color.YELLOW)) {//0xffff00ff
-                    if (blockColor.toIntBits() > Color.YELLOW.toIntBits())
-                        blockColor.add(0, 0, -.1f, 0);
+                interpSteps = 0;
+                curState = AnimState.NORMALTOSELECTED_ANIM;
+                update();
+                break;
+            case NORMALTOSELECTED_ANIM:
+                if (!blockColor.equals(Color.BLACK)) {
+                    float val = Interpolation.exp5Out.apply(interpSteps++ / maxInterpSteps);
+                    if (blockColor.toIntBits() > Color.BLACK.toIntBits())
+                        blockColor.add(-val, -val, -val, 0);
+                    if (charColor.toIntBits() < Color.WHITE.toIntBits())
+                        charColor.add(val, val, val, 0);
+                    if (blockScale > .88) {
+                        blockScale -= .12 * val;
+                    }
                 } else
                     curState = AnimState.SELECTED;
                 if (found)
@@ -74,7 +102,7 @@ public class Block extends DrawableObject {
                     curState = AnimState.SELECTEDTONORMAL;
                 break;
             case SELECTED:
-                blockColor = Color.YELLOW.cpy();
+                blockColor = Color.BLACK.cpy();
                 if (!selected)
                     curState = AnimState.SELECTEDTONORMAL;
                 break;
@@ -86,18 +114,28 @@ public class Block extends DrawableObject {
                         pos.set(targetPos);
                         velocity = 0;
                     }
-                }
-                else
+                } else
                     curState = AnimState.NORMAL;
                 break;
             case SELECTEDTONORMAL:
+                interpSteps = 0;
+                curState = AnimState.SELECTEDTONORMAL_ANIM;
+                update();
+                break;
+            case SELECTEDTONORMAL_ANIM:
                 if (!blockColor.equals(Color.WHITE)) {//0xffff00ff
-                    if (blockColor.toIntBits() < Color.WHITE.toIntBits()) {
-                        blockColor.add(0, 0, .1f, 0);
-                        String s = blockColor.toString();
-                    }
-                } else
+                    float val = Interpolation.exp5Out.apply(interpSteps++ / maxInterpSteps);
+                    if (blockColor.toIntBits() < Color.WHITE.toIntBits())
+                        blockColor.add(val, val, val, 0);
+                    if (charColor.toIntBits() > Color.BLACK.toIntBits())
+                        charColor.add(-val, -val, -val, 0);
+                    if (blockScale < 1)
+                        blockScale += .12 * val;
+
+                } else {
                     curState = AnimState.NORMAL;
+                    blockScale = 1f;
+                }
                 break;
             case TOFOUND:
                 break;
@@ -106,17 +144,48 @@ public class Block extends DrawableObject {
         }
     }
 
+    Vector2 tempVec = new Vector2();
+
     @Override
-    void render(ShapeRenderer shapeRenderer, SpriteBatch spriteBatch, BitmapFont font) {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+    void renderShapes(ShapeRenderer shapeRenderer) {
         shapeRenderer.setColor(blockColor);
         shapeRenderer.identity();
-        shapeRenderer.rect(pos.x, pos.y, pos.width, pos.height);
-        shapeRenderer.end();
+        if (blockScale != 1.0f) {
+            tempVec = pos.getCenter(tempVec);
+            float width = blockScale * pos.width;
+            float outlineWidth = width * 1.1f;
+            com.badlogic.gdx.math.Rectangle r = new com.badlogic.gdx.math.Rectangle(pos);
+            com.badlogic.gdx.math.Rectangle outline = new com.badlogic.gdx.math.Rectangle(pos);
 
-        spriteBatch.begin();
+            outline.width = outlineWidth;
+            outline.height = outlineWidth;
+            outline.setCenter(tempVec);
+            r.width = width;
+            r.height = width;
+            r.setCenter(tempVec);
+            shapeRenderer.setColor(1.0f - blockColor.r, 1.0f - blockColor.g, 1.0f - blockColor.b, 1.0f);
+            shapeRenderer.rect(outline.x, outline.y, outline.width, outline.height);
+            shapeRenderer.setColor(blockColor);
+            shapeRenderer.rect(r.x, r.y, r.width, r.height);
+        } else
+            shapeRenderer.rect(pos.x, pos.y, pos.width, pos.height);
+    }
+
+    @Override
+    void renderSprites(SpriteBatch spriteBatch, BitmapFont font) {
         font.setColor(charColor);
-        font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - letterWidth / 2, pos.y + pos.height / 2 + letterHeight / 2);
-        spriteBatch.end();
+        font.getData().setScale(font.getData().scaleX * blockScale);
+        float tempLetterWidth = letterWidth;
+        float tempLetterHeight = letterHeight;
+        if (blockScale != 1.0f) {
+            GlyphLayout glyphLayout = new GlyphLayout();
+            String item = letter + "";
+            glyphLayout.setText(font, item);
+            tempLetterWidth = glyphLayout.width;
+            tempLetterHeight = glyphLayout.height;
+
+            font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - tempLetterWidth / 2, pos.y + pos.height / 2 + tempLetterHeight / 2);
+        } else
+            font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - letterWidth / 2, pos.y + pos.height / 2 + letterHeight / 2);
     }
 }

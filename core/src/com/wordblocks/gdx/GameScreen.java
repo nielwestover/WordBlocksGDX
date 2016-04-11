@@ -11,13 +11,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.sun.glass.ui.Application;
 
 /**
  * Created by a2558 on 3/21/2016.
  */
 public class GameScreen extends WordBlocksInputProcessor implements Screen {
     final int worldWidth = 1200;
-    final int worldHeight = 1600;
+    final int worldHeight = 2133;
     long t;
     long nextGameTick = 0;
     final int FRAMES_PER_SECOND = 60;
@@ -50,6 +51,11 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
         Gdx.input.setInputProcessor(this);
         shapeRenderer  = new ShapeRenderer();
 
+        wordBlocksController = new WordBlocksController(worldWidth, worldHeight, this);
+        wordBlocksRenderer = new WordBlocksRenderer(worldWidth, worldHeight, this);
+        wordBlocksRenderer.setCamera(camera);
+        wordBlocksController.update();//do initial update to set up board, so game is not null for the next call
+
         //skin = new Skin(Gdx.files.internal("uiskin.json"));
         //stage = new Stage(viewport);
         //stage.addActor(new TextButton("Refresh", skin, "default"));
@@ -63,7 +69,7 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
     @Override
     public void render (float delta) {
         camera.update();
-        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         t = TimeUtils.millis();
@@ -80,16 +86,12 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
     boolean first = true;
     @Override
     public void resize (int width, int height) {
-        if (!first)
-            return;
         viewport.update(width, height);
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         this.width = width;
         this.height = height;
-        wordBlocksController = new WordBlocksController(worldWidth, worldHeight, this);
-        wordBlocksRenderer = new WordBlocksRenderer(worldWidth, worldHeight, camera, this);
-        wordBlocksController.update();//do initial update to set up board, so game is not null for the next call
-        first = false;
+
+        wordBlocksRenderer.setCamera(camera);
     }
 
     @Override

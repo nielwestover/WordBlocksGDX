@@ -17,5 +17,6 @@ public class DrawableObject {
     float velocity;
 
     void update(){};
-    void render(ShapeRenderer shapeRenderer, SpriteBatch spriteBatch, BitmapFont font){};
+    void renderShapes(ShapeRenderer shapeRenderer){};
+    void renderSprites(SpriteBatch spriteBatch, BitmapFont font){};
 }
