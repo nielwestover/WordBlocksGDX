@@ -44,7 +44,8 @@ public class WordBlocksController {
         switch (gameState) {
             case INIT:
                 game = new Game(MyApplication.getCurLevel());
-                game.refresh = new Rectangle(width - 50, 0, 50, 50);
+                game.refresh = new Rectangle(width - 150, 0, 150, 150);
+                game.skipNext = new Rectangle(0, 0, 150, 150);
                 initGameDimensions();
 
                 //always reinitialize the renderer when starting over

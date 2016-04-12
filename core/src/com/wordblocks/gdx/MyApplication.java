@@ -18,7 +18,7 @@ public class MyApplication {
     private static List<Level> levels = new ArrayList<Level>();
 
     private static Level curLevel;
-    public static int curLevelIndex = 50;
+    public static int curLevelIndex = 0;
 
     public static List<Level> levels() {
         if (levels == null || levels.size() == 0) {
@@ -53,7 +53,8 @@ public class MyApplication {
     }
 
     private static void loadAllLevels() throws IOException {
-        levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("allBoards.json"));
+        //levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("allBoards.json"));
+        levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("45_levels_3_game_ideas.json"));
     }
 
 }

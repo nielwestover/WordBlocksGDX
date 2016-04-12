@@ -1,0 +1,7 @@
+D:\Git\Android Project 1 - Word Blocks\WordListGenerator\WordListGenerator\bin\Release\WordListGenerator.dll
+D:\Git\Android Project 1 - Word Blocks\WordListGenerator\WordListGenerator\bin\Release\WordListGenerator.pdb
+D:\Git\Android Project 1 - Word Blocks\WordListGenerator\WordListGenerator\bin\Release\Newtonsoft.Json.dll
+D:\Git\Android Project 1 - Word Blocks\WordListGenerator\WordListGenerator\bin\Release\Newtonsoft.Json.xml
+D:\Git\Android Project 1 - Word Blocks\WordListGenerator\WordListGenerator\obj\Release\WordListGenerator.dll
+D:\Git\Android Project 1 - Word Blocks\WordListGenerator\WordListGenerator\obj\Release\WordListGenerator.pdb
+D:\Git\Android Project 1 - Word Blocks\WordListGenerator\WordListGenerator\obj\Release\WordListGenerator.csprojResolveAssemblyReference.cache

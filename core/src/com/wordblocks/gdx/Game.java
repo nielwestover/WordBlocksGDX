@@ -17,6 +17,7 @@ import helpers.IntPair;
 public class Game {
 
     Rectangle refresh;
+    Rectangle skipNext;
     public Game(Level level){
         int dim = (int)Math.sqrt(level.board.size());
         grid = new Cell[dim][dim];

@@ -116,6 +116,12 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
             wordBlocksController.init();
         }
 
+        if (wordBlocksController.game.skipNext.contains(screen.x, screen.y)) {
+            //automatically calls init on the renderer
+            MyApplication.incrementCurLevel();
+            wordBlocksController.init();
+        }
+
 
         return true;
     }

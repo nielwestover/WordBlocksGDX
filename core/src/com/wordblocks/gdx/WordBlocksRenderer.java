@@ -42,22 +42,24 @@ public class WordBlocksRenderer {
         this.height = height;
 
         spriteBatch = new SpriteBatch();
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ARLRDBD.TTF"));
+        FreeTypeFontGenerator generatorBlocks = new FreeTypeFontGenerator(Gdx.files.internal("fonts/lucon.ttf"));
+        FreeTypeFontGenerator generatorText = new FreeTypeFontGenerator(Gdx.files.internal("fonts/AGENCYB.TTF"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
         parameter.size = 128;
-        fontBlocks = generator.generateFont(parameter);
+        fontBlocks = generatorBlocks.generateFont(parameter);
         fontBlocks.setColor(Color.BLACK);
 
-        fontAnswers = generator.generateFont(parameter);
+        fontAnswers = generatorText.generateFont(parameter);
 
-        fontCurWord = generator.generateFont(parameter);
+        fontCurWord = generatorText.generateFont(parameter);
         fontCurWord.setColor(Color.WHITE);
 
         fontBlocks.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         fontCurWord.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         fontAnswers.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        generator.dispose(); // don't forget to dispose to avoid memory leaks!
+        generatorBlocks.dispose(); // don't forget to dispose to avoid memory leaks!
+        generatorText.dispose(); // don't forget to dispose to avoid memory leaks!
         drawState = drawState.INIT;
     }
 
@@ -93,8 +95,8 @@ public class WordBlocksRenderer {
                 float blockFontSize = getBlockFontScale();
                 origBlockFontScale = blockFontSize;
                 fontBlocks.getData().setScale(blockFontSize, blockFontSize);
-                fontCurWord.getData().setScale(60.0f / 128.0f);
-                fontAnswers.getData().setScale(40.0f / 128.0f);
+                fontCurWord.getData().setScale(70.0f / 128.0f);
+                fontAnswers.getData().setScale(50.0f / 128.0f);
 
                 for (int i = 0; i < game.grid.length; ++i) {
                     for (int j = 0; j < game.grid[i].length; ++j) {
@@ -125,7 +127,7 @@ public class WordBlocksRenderer {
                 //Draw answers
                 drawAnswers(game);
 
-                drawRefresh(game.refresh);
+                drawButtons();
 
                 drawFPSCounter();
                 break;
@@ -135,18 +137,18 @@ public class WordBlocksRenderer {
     private void drawFPSCounter() {
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
-        float x = camera.viewportWidth - 150;
+        float x = width - 220;
         float y = camera.viewportHeight - 15;
         int fps = Gdx.graphics.getFramesPerSecond();
         BitmapFont fpsFont = fontAnswers;
         if (fps >= 45) {
-        // 45 or more FPS show up in green
+            // 45 or more FPS show up in green
             fpsFont.setColor(0, 1, 0, 1);
         } else if (fps >= 30) {
-        // 30 or more FPS show up in yellow
+            // 30 or more FPS show up in yellow
             fpsFont.setColor(1, 1, 0, 1);
         } else {
-        // less than 30 FPS show up in red
+            // less than 30 FPS show up in red
             fpsFont.setColor(1, 0, 0, 1);
         }
         fpsFont.draw(spriteBatch, "FPS: " + fps, x, y);
@@ -154,12 +156,15 @@ public class WordBlocksRenderer {
         spriteBatch.end();
     }
 
-    private void drawRefresh(Rectangle refresh) {
+    private void drawButtons() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(1, 1, 0, 1);
         shapeRenderer.identity();
         //shapeRenderer.translate(refresh.x, refresh.y, 0);
-        shapeRenderer.rect(refresh.x, refresh.y, refresh.width, refresh.height);
+        shapeRenderer.rect(game.refresh.x, game.refresh.y, game.refresh.width, game.refresh.height);
+
+        shapeRenderer.setColor(1, 0, 0, 1);
+        shapeRenderer.rect(game.skipNext.x, game.skipNext.y, game.skipNext.width, game.skipNext.height);
         shapeRenderer.end();
     }
 
@@ -174,19 +179,31 @@ public class WordBlocksRenderer {
             //fontCurWord.draw(spriteBatch, game.selectedWord, width / 2, height - (width + 40));
 
             glyphLayout.setText(fontCurWord, game.selectedWord);
-            fontCurWord.draw(spriteBatch, game.selectedWord, width/2 - glyphLayout.width / 2, height - (width + 40));
+            fontCurWord.draw(spriteBatch, game.selectedWord, width / 2 - glyphLayout.width / 2, height - (width + 40));
         }
-        for (int i = 0; i < game.answers.size(); ++i) {
-            if (game.answers.get(i).found)
-                fontAnswers.setColor(Color.GRAY);
-            else
-                fontAnswers.setColor(Color.WHITE);
-            fontAnswers.draw(spriteBatch, game.answers.get(i).word, 6, height - (game.dims.screenWidth + 65 + 35 * i));
+
+        String numWords = "# Words: " + game.answers.size();
+        if (MyApplication.curLevelIndex % 15 < 5)
+            fontAnswers.draw(spriteBatch, numWords, 10, height - (game.dims.screenWidth + 125));
+        else if (MyApplication.curLevelIndex % 15 < 10) {
+            for (int i = 0; i < game.answers.size(); ++i) {
+                if (game.answers.get(i).found)
+                    fontAnswers.setColor(Color.GRAY);
+                else
+                    fontAnswers.setColor(Color.WHITE);
+                fontAnswers.draw(spriteBatch, (i + 1) + ": " + game.answers.get(i).word.length() + " characters", 10, height - (game.dims.screenWidth + 125 + 55 * i));
+            }
+        } else {
+            for (int i = 0; i < game.answers.size(); ++i) {
+                if (game.answers.get(i).found)
+                    fontAnswers.setColor(Color.GRAY);
+                else
+                    fontAnswers.setColor(Color.WHITE);
+                fontAnswers.draw(spriteBatch, (i + 1) + ": " + MyApplication.getCurLevel().hints.get(i), 10, height - (game.dims.screenWidth + 125 + 55 * i));
+            }
         }
         spriteBatch.end();
-
     }
-
     private void drawBlocks(Game game) {
         logger.log();
         //float inset = .13f * game.dims.boxDim;
