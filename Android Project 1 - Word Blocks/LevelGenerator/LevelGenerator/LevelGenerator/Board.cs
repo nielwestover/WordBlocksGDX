@@ -26,7 +26,7 @@ namespace LevelGenerator
 	};
 	public class Cell
 	{
-		
+
 		public string c
 		{
 			get; set;
@@ -61,7 +61,42 @@ namespace LevelGenerator
 				if (!insertWord(word))
 					return false;
 			}
+			return isQualityBoard(level);
+		}
+
+		private bool isQualityBoard(List<string> level)
+		{
+			foreach (var item in level)
+			{
+				if (item.Length <= dim && wordEasyToFind(item))
+					return false;
+			}
 			return true;
+		}
+
+		private bool wordEasyToFind(string item)
+		{
+			for (int row = 0; row < dim; ++row)
+			{
+				string rowWord = "";
+				for (int col = 0; col < dim; ++col)
+				{
+					rowWord += board[row, col].c;
+				}
+				if (rowWord.Contains(item) || Utils.ReverseString(rowWord).Contains(item))
+					return true;
+			}
+			for (int col = 0; col < dim; ++col)
+			{
+				string colWord = "";
+				for (int row = 0; row < dim; ++row)
+				{
+					colWord += board[row, col].c;
+				}
+				if (colWord.Contains(item) || Utils.ReverseString(colWord).Contains(item))
+					return true;
+			}
+			return false;
 		}
 
 		int dim;
@@ -89,7 +124,7 @@ namespace LevelGenerator
 			//row
 			for (int row = dim - 1; row >= 0; --row)
 			{
-				//cow
+				//col
 				for (int col = 0; col < dim; ++col)
 				{
 					if (board[row, col] != null)
@@ -105,7 +140,7 @@ namespace LevelGenerator
 		internal bool insertWord(string word)
 		{
 			//start with a random location
-			Pair<int, int> cell = new Pair<int, int>(Utils.RandomNumber(0, dim), Utils.RandomNumber(0, dim));			
+			Pair<int, int> cell = new Pair<int, int>(Utils.RandomNumber(0, dim), Utils.RandomNumber(0, dim));
 			//we're building the level from the final state to the initial state, so iterate over the letters in reverse order
 			for (int i = word.Length - 1; i >= 0; --i)
 			{
@@ -114,34 +149,10 @@ namespace LevelGenerator
 				if (cell == null)
 					return false;
 				insertCharacter(word[i], word, cell);
-				//print();
 			}
 			return true;
 		}
 
-		//private void dropLetters()
-		//{
-		//	bool changed = true;
-		//	while (changed)
-		//	{
-		//		changed = false;
-		//		for (int col = 0; col < dim; ++col)
-		//		{
-		//			int curRow = dim - 2;
-		//			while (curRow >= 0)
-		//			{
-		//				if (board[curRow, col] == null && board[curRow + 1, col] != null)
-		//				{
-		//					changed = true;
-		//					board[curRow, col] = board[curRow + 1, col];
-		//					board[curRow + 1, col] = null;
-		//				}
-		//				--curRow;
-
-		//			}
-		//		}
-		//	}
-		//}
 		int hintIndex;
 
 		private void insertCharacter(char ch, string word, Pair<int, int> cell)
@@ -200,8 +211,8 @@ namespace LevelGenerator
 				if (board[row, cell.Col].Word.Equals(word))
 					return false;
 			}
-			
-            return true;
+
+			return true;
 		}
 
 		//returns 1 of 9 possible locations

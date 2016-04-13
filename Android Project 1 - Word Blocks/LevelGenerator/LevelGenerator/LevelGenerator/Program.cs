@@ -32,13 +32,13 @@ namespace LevelGenerator
 				foreach (List<string> level in levelPack)
 				{
 					Board b = generateBoard(level);
-					//b.print();
+					b.print();
 					if (level.Count > mostWords)
 					{
 						mostWords = level.Count;
 						System.Console.WriteLine(mostWords);
 					}
-					allBoards.Add(new Level() { board = b.ToList(), words = level });
+					allBoards.Add(new Level() { board = b.ToList(), words = level.OrderBy(n => n).ToList() });
 				}
 			}
 			string all = JsonConvert.SerializeObject(allBoards);

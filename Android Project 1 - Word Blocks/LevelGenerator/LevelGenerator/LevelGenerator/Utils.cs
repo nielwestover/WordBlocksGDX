@@ -20,7 +20,7 @@ namespace LevelGenerator
 		}
 
 		//Function to get random number
-		private static readonly Random random = new Random();
+		private static readonly Random random = new Random(0);
 		private static readonly object syncLock = new object();
 		public static int RandomNumber(int min, int max)
 		{
@@ -28,6 +28,13 @@ namespace LevelGenerator
 			{ // synchronize
 				return random.Next(min, max);
 			}
+		}
+
+		public static string ReverseString(string s)
+		{
+			char[] arr = s.ToCharArray();
+			Array.Reverse(arr);
+			return new string(arr);
 		}
 
 	}

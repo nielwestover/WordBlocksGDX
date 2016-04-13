@@ -53,8 +53,8 @@ public class MyApplication {
     }
 
     private static void loadAllLevels() throws IOException {
-        //levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("allBoards.json"));
-        levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("45_levels_3_game_ideas.json"));
+        levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("allBoards.json"));
+        //levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("45_levels_3_game_ideas.json"));
     }
 
 }
