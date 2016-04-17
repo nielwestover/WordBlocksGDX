@@ -9,6 +9,7 @@ public class WordBlocksGDX extends com.badlogic.gdx.Game {
     @Override
     public void create() {
         setScreen(new GameScreen(this));
+        //setScreen(new TestInterpolation());
     }
     @Override
     public void dispose() {

@@ -74,7 +74,7 @@ public class Game {
         for (int i = 0; i < grid.length; ++i) {
             for (int j = 0; j < grid[i].length; ++j) {
                 if (grid[i][j].block != null)
-                    grid[i][j].block.selected = false;
+                    grid[i][j].block.setSelected(false);
             }
         }
         selectedWord = "";

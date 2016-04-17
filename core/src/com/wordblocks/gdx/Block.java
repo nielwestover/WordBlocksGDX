@@ -14,8 +14,8 @@ public class Block extends DrawableObject {
     int hintIndex;
     float letterWidth;
     float letterHeight;
-    boolean selected;
-    boolean found;
+    private boolean selected;
+    private boolean found;
     Color blockColor = Color.WHITE.cpy();
     Color charColor = Color.BLACK.cpy();
     float blockScale;
@@ -47,12 +47,21 @@ public class Block extends DrawableObject {
     }
 
     public void setCurState(AnimState state) {
+
         curState = state;
     }
 
     void setFound(boolean blockFound) {
         found = blockFound;
 
+    }
+
+    void setSelected(boolean sel) {
+        selected = sel;
+    }
+
+    boolean getSelected() {
+        return selected;
     }
 
     boolean isTouched(float X, float Y, float inset) {
@@ -62,8 +71,8 @@ public class Block extends DrawableObject {
         return false;
     }
 
-    float maxInterpSteps = 20;
-    float interpSteps = 0;
+    private float maxInterpSteps = 20;
+    private int interpSteps = 0;
 
     @Override
     void update() {
@@ -82,18 +91,13 @@ public class Block extends DrawableObject {
             case NORMALTOSELECTED:
                 interpSteps = 0;
                 curState = AnimState.NORMALTOSELECTED_ANIM;
-                update();
-                break;
             case NORMALTOSELECTED_ANIM:
-                if (!blockColor.equals(Color.BLACK)) {
-                    float val = Interpolation.exp5Out.apply(interpSteps++ / maxInterpSteps);
-                    if (blockColor.toIntBits() > Color.BLACK.toIntBits())
-                        blockColor.add(-val, -val, -val, 0);
-                    if (charColor.toIntBits() < Color.WHITE.toIntBits())
-                        charColor.add(val, val, val, 0);
-                    if (blockScale > .88) {
-                        blockScale -= .12 * val;
-                    }
+                if (interpSteps++ <= maxInterpSteps) {
+                    float val = Interpolation.exp10Out.apply(interpSteps / maxInterpSteps);
+                    blockColor.set(1.0f - val, 1.0f - val, 1.0f - val, 1);
+                    charColor.set(val, val, val, 1);
+                    blockScale = 1.0f - val * .12f;
+
                 } else
                     curState = AnimState.SELECTED;
                 if (found)
@@ -120,19 +124,16 @@ public class Block extends DrawableObject {
             case SELECTEDTONORMAL:
                 interpSteps = 0;
                 curState = AnimState.SELECTEDTONORMAL_ANIM;
-                update();
-                break;
             case SELECTEDTONORMAL_ANIM:
-                if (!blockColor.equals(Color.WHITE)) {//0xffff00ff
-                    float val = Interpolation.exp5Out.apply(interpSteps++ / maxInterpSteps);
-                    if (blockColor.toIntBits() < Color.WHITE.toIntBits())
-                        blockColor.add(val, val, val, 0);
-                    if (charColor.toIntBits() > Color.BLACK.toIntBits())
-                        charColor.add(-val, -val, -val, 0);
-                    if (blockScale < 1)
-                        blockScale += .12 * val;
+                if (interpSteps++ <= maxInterpSteps) {
+                    float val = Interpolation.exp10Out.apply(interpSteps / maxInterpSteps);
+                    blockColor.set(val, val, val, 1);
+                    charColor.set(1.0f - val, 1.0f - val, 1.0f - val, 1);
+                    blockScale = .88f + val * .12f;
 
                 } else {
+                    blockColor.set(1, 1, 1, 1);
+                    charColor.set(0,0,0, 1);
                     curState = AnimState.NORMAL;
                     blockScale = 1f;
                 }
@@ -153,7 +154,7 @@ public class Block extends DrawableObject {
         if (blockScale != 1.0f) {
             tempVec = pos.getCenter(tempVec);
             float width = blockScale * pos.width;
-            float outlineWidth = width * 1.1f;
+            float outlineWidth = Math.min(width * 1.1f, pos.width);
             com.badlogic.gdx.math.Rectangle r = new com.badlogic.gdx.math.Rectangle(pos);
             com.badlogic.gdx.math.Rectangle outline = new com.badlogic.gdx.math.Rectangle(pos);
 
@@ -163,7 +164,7 @@ public class Block extends DrawableObject {
             r.width = width;
             r.height = width;
             r.setCenter(tempVec);
-            shapeRenderer.setColor(1.0f - blockColor.r, 1.0f - blockColor.g, 1.0f - blockColor.b, 1.0f);
+            shapeRenderer.setColor(charColor);
             shapeRenderer.rect(outline.x, outline.y, outline.width, outline.height);
             shapeRenderer.setColor(blockColor);
             shapeRenderer.rect(r.x, r.y, r.width, r.height);

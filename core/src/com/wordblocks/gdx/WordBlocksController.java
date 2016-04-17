@@ -57,12 +57,15 @@ public class WordBlocksController {
                     selectedBlock = new IntPair(-1, -1);
                     previousSelectedBlock = new IntPair(-1, -1);
                     gameState = GameStates.FINGER_DOWN;
+                    update();
                 }
                 break;
             case FINGER_DOWN:
                 doBlockLogic();
-                if (fingerMoving || !fingerPress)
+                if (fingerMoving || !fingerPress) {
                     gameState = GameStates.MOVING;
+                    update();
+                }
                 break;
             case MOVING:
                 if (!fingerPress) {
@@ -141,7 +144,7 @@ public class WordBlocksController {
 
 
         game.dims.boxGap = (25 - 2 * game.grid.length) * game.dims.scalar;
-        game.dims.padding = 10 * game.dims.scalar;
+        game.dims.padding = 60 * game.dims.scalar;
         game.dims.boxRounding = 10 * game.dims.scalar;
         game.dims.boxDim = (game.dims.screenWidth - (game.dims.padding * 2 + game.dims.boxGap * (game.grid.length - 1))) / (game.grid.length * 1.0f);
         game.dims.inset = .13f * game.dims.boxDim;
@@ -162,7 +165,7 @@ public class WordBlocksController {
         }
         if (selectedBlock == previousSelectedBlock)
             return false;
-        if (game.grid[selectedBlock.first][selectedBlock.second].block.selected)
+        if (game.grid[selectedBlock.first][selectedBlock.second].block.getSelected())
             return false;
         int xDist = Math.abs(selectedBlock.first - previousSelectedBlock.first);
         int yDist = Math.abs(selectedBlock.second - previousSelectedBlock.second);
@@ -189,8 +192,8 @@ public class WordBlocksController {
         int j = selectedBlock.second;
         if (i == -1 || j == -1)
             return;
-        if (game.grid[i][j].block != null && !game.grid[i][j].block.selected) {
-            game.grid[i][j].block.selected = true;
+        if (game.grid[i][j].block != null && !game.grid[i][j].block.getSelected()) {
+            game.grid[i][j].block.setSelected(true);
             game.selectedWord = game.selectedWord.concat(game.grid[i][j].block.letter + "");
             game.selectedChain.add(new IntPair(i, j));
         }
