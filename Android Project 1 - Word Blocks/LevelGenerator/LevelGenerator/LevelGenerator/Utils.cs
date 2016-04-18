@@ -37,5 +37,15 @@ namespace LevelGenerator
 			return new string(arr);
 		}
 
+		public static int minLevelSpread(int dim, LEVEL_DIFFICULTY levelDifficulty)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static int maxLevelSpread(int dim, LEVEL_DIFFICULTY levelDifficulty)
+		{
+			throw new NotImplementedException();
+		}
+
 	}
 }

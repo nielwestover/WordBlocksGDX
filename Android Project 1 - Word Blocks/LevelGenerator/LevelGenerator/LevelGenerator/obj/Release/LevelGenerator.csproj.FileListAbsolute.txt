@@ -5,3 +5,4 @@ D:\Git\WordBlocksGDX\Android Project 1 - Word Blocks\LevelGenerator\LevelGenerat
 D:\Git\WordBlocksGDX\Android Project 1 - Word Blocks\LevelGenerator\LevelGenerator\LevelGenerator\bin\Release\Newtonsoft.Json.xml
 D:\Git\WordBlocksGDX\Android Project 1 - Word Blocks\LevelGenerator\LevelGenerator\LevelGenerator\obj\Release\LevelGenerator.exe
 D:\Git\WordBlocksGDX\Android Project 1 - Word Blocks\LevelGenerator\LevelGenerator\LevelGenerator\obj\Release\LevelGenerator.pdb
+D:\Git\WordBlocksGDX\Android Project 1 - Word Blocks\LevelGenerator\LevelGenerator\LevelGenerator\obj\Release\LevelGenerator.csprojResolveAssemblyReference.cache

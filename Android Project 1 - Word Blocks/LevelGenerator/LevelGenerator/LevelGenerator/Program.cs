@@ -26,19 +26,18 @@ namespace LevelGenerator
 			string levels = File.ReadAllText(@"D:\allLevels.json");
 			List<List<List<string>>> allLevels = JsonConvert.DeserializeObject<List<List<List<string>>>>(levels);
 			List<Level> allBoards = new List<Level>();
-			int mostWords = 0;
 			foreach (var levelPack in allLevels)
 			{
 				foreach (List<string> level in levelPack)
 				{
-					Board b = generateBoard(level);
-					b.print();
-					if (level.Count > mostWords)
+					for (int i = 0; i < 20; i++)
 					{
-						mostWords = level.Count;
-						System.Console.WriteLine(mostWords);
+						Board b = generateBoard(level);
+						b.print();
+
+						//allBoards.Add(new Level() { board = b.ToList(), words = level.OrderBy(n => n).ToList() });
 					}
-					allBoards.Add(new Level() { board = b.ToList(), words = level.OrderBy(n => n).ToList() });
+					
 				}
 			}
 			string all = JsonConvert.SerializeObject(allBoards);
@@ -49,7 +48,7 @@ namespace LevelGenerator
 		{
 			int dim = Utils.getDimension(level);
 			Board board = new Board(dim);
-
+			board.setDifficulty(LEVEL_DIFFICULTY.EASY);
 			while (true)
 			{
 				board.reset();

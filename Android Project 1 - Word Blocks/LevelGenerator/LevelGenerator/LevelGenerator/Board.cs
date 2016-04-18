@@ -7,21 +7,33 @@ using Newtonsoft.Json;
 
 namespace LevelGenerator
 {
-	public class Pair<T, U>
+	public enum LEVEL_DIFFICULTY
 	{
-		public Pair() { }
-		public Pair(T first, U second)
+		EASY,
+		MEDIUM,
+		HARD
+	};
+
+	public class RowColPair
+	{
+		public RowColPair() { }
+		public RowColPair(int first, int second)
 		{
 			this.Row = first;
 			this.Col = second;
 		}
 
-		public T Row { get; set; }
-		public U Col { get; set; }
+		public int Row { get; set; }
+		public int Col { get; set; }
 
 		public override string ToString()
 		{
 			return Row + ", " + Col;
+		}
+
+		internal bool equals(RowColPair p)
+		{
+			return Row == p.Row && Col == p.Col;
 		}
 	};
 	public class Cell
@@ -37,6 +49,8 @@ namespace LevelGenerator
 		{
 			get; set;
 		}
+		[JsonIgnore]
+		public RowColPair loc;
 	}
 	public class Board
 	{
@@ -66,12 +80,130 @@ namespace LevelGenerator
 
 		private bool isQualityBoard(List<string> level)
 		{
+			List<Cell> solveOrder = getSolveOrder();
+			
 			foreach (var item in level)
 			{
 				if (item.Length <= dim && wordEasyToFind(item))
 					return false;
+				
 			}
+			int levelSpread = getLevelSpread(solveOrder);
+			Console.WriteLine(string.Join(" ", level.ToArray()) + "\t\tspread = " + levelSpread);
+			
+			//if (levelSpread < Utils.minLevelSpread(dim, levelDifficulty))
+			//	return false;
+			//if (levelSpread > Utils.maxLevelSpread(dim, levelDifficulty))
+			//	return false;
+
 			return true;
+		}
+
+		private int getLevelSpread(List<Cell> solveOrder)
+		{
+			int spread = 0;
+			while (solveOrder.Count > 0)
+			{
+				int wordSize = solveOrder.First().Word.Length;
+				List<Cell> curWordList = solveOrder.GetRange(0, wordSize);
+
+				spread += recursiveGetSpread(curWordList, null, 0, 0);
+
+				solveOrder.RemoveRange(0, wordSize);
+				dropWords(solveOrder);
+			}
+			return spread;
+		}
+		public void dropWords(List<Cell> solveOrder)
+		{
+			Cell[,] b = new Cell[dim, dim];
+			foreach (var item in solveOrder)
+			{
+				b[item.loc.Row, item.loc.Col] = item;
+			}
+			
+			bool blockDropped = true;
+			while (blockDropped)
+			{
+				blockDropped = false;
+				for (int col = 0; col < dim; ++col)
+				{
+					for (int row = 0; row < dim - 1; ++row)
+					{
+						if (b[row, col] == null)
+						{
+							if (row + 1 < dim && b[row + 1, col] != null)
+							{
+								b[row, col] = b[row + 1, col];
+								b[row + 1, col] = null;
+								blockDropped = true;
+							}
+						}
+					}
+				}
+			}
+			for (int col = 0; col < dim; ++col)
+			{
+				for (int row = 0; row < dim - 1; ++row)
+				{
+					if (b[row, col] != null)
+					{
+						b[row, col].loc.Col = col;
+						b[row, col].loc.Row = row;
+					}
+				}
+			}
+			
+		}
+
+		private int recursiveGetSpread(List<Cell> curWordList, RowColPair dir, int lastScore, int spreadSum)
+		{
+			if (curWordList.Count == 1)
+				return spreadSum;
+			spreadSum += getSpreadForLetterPair(curWordList[0], curWordList[1], ref dir, ref lastScore);
+			curWordList.RemoveAt(0);
+			return recursiveGetSpread(curWordList, dir, lastScore, spreadSum);
+		}
+
+		private int getSpreadForLetterPair(Cell cell1, Cell cell2, ref RowColPair dir, ref int lastScore)
+		{
+			int rowDiff = cell1.loc.Row - cell2.loc.Row;
+			int colDiff = cell1.loc.Col - cell2.loc.Col;
+			RowColPair newDir = new RowColPair(rowDiff, colDiff);
+			bool isDiag = Math.Abs(newDir.Col) == 1 && Math.Abs(newDir.Row) == 1;
+			if (dir == null)
+			{
+				lastScore = (isDiag ? 5 : 1);
+				dir = newDir;
+			}
+			else
+			{
+				if (dir.equals(newDir))
+					lastScore--;
+			}
+			return lastScore;
+		
+		}
+
+		private List<Cell> getSolveOrder()
+		{
+			Cell[] l = new Cell[dim * dim];
+			for (int row = 0; row < dim; ++row)
+			{
+				for (int col = 0; col < dim; ++col)
+				{
+					board[row, col].loc = new RowColPair(row, col);
+					l[board[row, col].h] = board[row, col];
+				}
+			}
+			return l.ToList();
+		}
+
+
+		LEVEL_DIFFICULTY levelDifficulty = LEVEL_DIFFICULTY.EASY;
+		internal void setDifficulty(LEVEL_DIFFICULTY difficulty)
+		{
+			levelDifficulty = difficulty;
 		}
 
 		private bool wordEasyToFind(string item)
@@ -140,7 +272,7 @@ namespace LevelGenerator
 		internal bool insertWord(string word)
 		{
 			//start with a random location
-			Pair<int, int> cell = new Pair<int, int>(Utils.RandomNumber(0, dim), Utils.RandomNumber(0, dim));
+			RowColPair cell = new RowColPair(Utils.RandomNumber(0, dim), Utils.RandomNumber(0, dim));
 			//we're building the level from the final state to the initial state, so iterate over the letters in reverse order
 			for (int i = word.Length - 1; i >= 0; --i)
 			{
@@ -155,7 +287,7 @@ namespace LevelGenerator
 
 		int hintIndex;
 
-		private void insertCharacter(char ch, string word, Pair<int, int> cell)
+		private void insertCharacter(char ch, string word, RowColPair cell)
 		{
 			if (board[cell.Row, cell.Col] != null)
 			{
@@ -175,19 +307,19 @@ namespace LevelGenerator
 
 		}
 
-		private Pair<int, int> getNextCell(Pair<int, int> cell, string word)
+		private RowColPair getNextCell(RowColPair cell, string word)
 		{
 			int count = 0;
 			while (++count < 50)
 			{
-				Pair<int, int> newCell = getRandomAdjacentCell(cell);
+				RowColPair newCell = getRandomAdjacentCell(cell);
 				if (cellIsValid(newCell, word))
 					return newCell;
 			}
 			return null;
 		}
 
-		private bool cellIsValid(Pair<int, int> cell, string word)
+		private bool cellIsValid(RowColPair cell, string word)
 		{
 			//check it's inside grid
 			if (cell.Row >= dim || cell.Row < 0 || cell.Col >= dim || cell.Col < 0)
@@ -216,29 +348,29 @@ namespace LevelGenerator
 		}
 
 		//returns 1 of 9 possible locations
-		private Pair<int, int> getRandomAdjacentCell(Pair<int, int> cell)
+		private RowColPair getRandomAdjacentCell(RowColPair cell)
 		{
 			int pos = Utils.RandomNumber(0, 9);
 			switch (pos)
 			{
 				case 0:
-					return new Pair<int, int>(cell.Row - 1, cell.Col - 1);
+					return new RowColPair(cell.Row - 1, cell.Col - 1);
 				case 1:
-					return new Pair<int, int>(cell.Row - 1, cell.Col);
+					return new RowColPair(cell.Row - 1, cell.Col);
 				case 2:
-					return new Pair<int, int>(cell.Row - 1, cell.Col + 1);
+					return new RowColPair(cell.Row - 1, cell.Col + 1);
 				case 3:
-					return new Pair<int, int>(cell.Row, cell.Col - 1);
+					return new RowColPair(cell.Row, cell.Col - 1);
 				case 4:
-					return new Pair<int, int>(cell.Row, cell.Col);
+					return new RowColPair(cell.Row, cell.Col);
 				case 5:
-					return new Pair<int, int>(cell.Row, cell.Col + 1);
+					return new RowColPair(cell.Row, cell.Col + 1);
 				case 6:
-					return new Pair<int, int>(cell.Row + 1, cell.Col - 1);
+					return new RowColPair(cell.Row + 1, cell.Col - 1);
 				case 7:
-					return new Pair<int, int>(cell.Row + 1, cell.Col);
+					return new RowColPair(cell.Row + 1, cell.Col);
 				case 8:
-					return new Pair<int, int>(cell.Row + 1, cell.Col + 1);
+					return new RowColPair(cell.Row + 1, cell.Col + 1);
 				default:
 					throw new Exception("Should not get here!");
 			}

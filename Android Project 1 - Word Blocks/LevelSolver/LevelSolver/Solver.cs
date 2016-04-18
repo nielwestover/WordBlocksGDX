@@ -1,15 +1,28 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using System;
+using System.Diagnostics;
 
 namespace LevelSolver
 {
+
+	public class Stats
+	{
+		public int level;
+		public int boardSize;
+		public int numWords;
+		public int permRecursions = 0;
+		public long timeForPermutation_ms;
+		public int numPermutations;
+		public int totalRecursions = 0;
+	}
 	internal class Solver
 	{
 		public Solver()
 		{
 
 		}
+		public Stats stats = new Stats();
 		List<List<string>> permutations;
 		public List<int> solveBoard(Board b)
 		{
@@ -17,6 +30,9 @@ namespace LevelSolver
 			permutations.Shuffle();
 			for (int i = 0; i < permutations.Count; ++i)
 			{
+				stats.permRecursions = 0;
+				Stopwatch permTime = new Stopwatch();
+				permTime.Start();
 				List<string> curPerm = permutations[i];
 				List<int> curWordOrder = new List<int>();
 				Board copy = b.copy();
@@ -24,19 +40,29 @@ namespace LevelSolver
 				copy.curCell = null;
 				var solveOrder = solve(copy);
 				if (solveOrder != null)
-					return solveOrder;				
-			}			
+				{
+					stats.timeForPermutation_ms = permTime.ElapsedMilliseconds;
+					stats.numPermutations = i + 1;
+					stats.numWords = b.words.Count;
+					stats.boardSize = b.dim;
+					return solveOrder;
+				}
+				permTime.Stop();
+
+			}
 			return null;
 		}
 
 		public List<int> solve(Board b)
-		{			
+		{
+			stats.permRecursions++;
+			stats.totalRecursions++;
 			//b.print();
 			if (String.IsNullOrEmpty(b.words[0]))
 			{
 				b.words.RemoveAt(0);
 				b.curCell = null;//starting new word
-				b.dropWords();				
+				b.dropWords();
 			}
 			//first check if end condition is satisfied
 			if (b.words.Count == 0)
@@ -73,6 +99,6 @@ namespace LevelSolver
 			return null;
 		}
 
-		
+
 	}
 }

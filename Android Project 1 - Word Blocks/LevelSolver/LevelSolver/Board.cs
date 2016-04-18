@@ -49,7 +49,7 @@ namespace LevelSolver
 			return b;
 		}
 
-		int dim;
+		public int dim;
 		Cell[,] board;
 		internal string curWord;
 		internal int curLetterIndex;
@@ -82,6 +82,13 @@ namespace LevelSolver
 				}
 			}
 			computeUniqueLetters();
+			foreach (var item in uniqueLetters)
+			{
+				if (item.Value == null)
+				{
+					Console.WriteLine("*************************************" + item.Key + "in level " + string.Join(" ", words.ToArray()) + "*********************************************"); 
+				}
+			}
 		}
 		public class UniqueLetter
 		{
@@ -96,7 +103,7 @@ namespace LevelSolver
 				string curWord = words[i];
 				uniqueLetters[curWord] = null;
 				string uniqueChar = getUniqueCharacter(curWord);
-				if (uniqueChar != null)
+				if (uniqueChar != "")
 					uniqueLetters[curWord] = new UniqueLetter() { id = findIdOfUniqueCharacter(uniqueChar), uniqueIndex = curWord.IndexOf(uniqueChar) };
 			}
 		}
@@ -150,7 +157,9 @@ namespace LevelSolver
 
 		internal List<RowColPair> getLetterLocationsNearby(string candidate, RowColPair cell)
 		{
-			RowColPair uniqueLoc = getLocationByID(uniqueLetters[curWord].id);
+			RowColPair uniqueLoc = null;
+			if (uniqueLetters[curWord] != null)
+				getLocationByID(uniqueLetters[curWord].id);			
 			List<RowColPair> locs = new List<RowColPair>();
 			for (int row = -1; row < 2; ++row)
 			{
@@ -174,7 +183,9 @@ namespace LevelSolver
 
 		internal List<RowColPair> getLetterLocations(string letter)
 		{
-			RowColPair uniqueLoc = getLocationByID(uniqueLetters[curWord].id);
+			RowColPair uniqueLoc = null;
+			if (uniqueLetters[curWord] != null)
+				getLocationByID(uniqueLetters[curWord].id);
 			List<RowColPair> locs = new List<RowColPair>();
 			for (int row = 0; row < dim; ++row)
 			{
@@ -183,7 +194,7 @@ namespace LevelSolver
 					if (board[row, col] != null && board[row, col].c.Equals(letter))
 					{
 						if (uniqueLoc == null || closeEnoughToUniqueLetter(uniqueLoc, row, col))
-							locs.Add(new RowColPair(row, col));
+						locs.Add(new RowColPair(row, col));
 					}
 				}
 			}
@@ -193,14 +204,45 @@ namespace LevelSolver
 		private bool closeEnoughToUniqueLetter(RowColPair uniqueLoc, int row, int col)
 		{
 			//return true;
-			//if (uniqueLetters[curWord] == null)
-			//	return true;//N/A
+			if (uniqueLetters[curWord] == null)
+				return true;//N/A
 			int letterDistance = Math.Abs(uniqueLetters[curWord].uniqueIndex - curLetterIndex);
 			int rowDist = Math.Abs(uniqueLoc.Row - row);
 			int colDist = Math.Abs(uniqueLoc.Col - col);
 			if (letterDistance >= Math.Max(rowDist, colDist))
 				return true;
 			return false;
+		}
+
+		private RowColPair getClosestCharacterPosition(string ch, RowColPair startPos)
+		{
+			int bestDistance = 100;
+			RowColPair bestLoc = null;
+			for (int row = 0; row < dim; ++row)
+			{
+				for (int col = 0; col < dim; ++col)
+				{
+					if (board[row, col] != null && board[row, col].c == ch)
+					{
+						RowColPair charPos = new RowColPair(row, col);
+						int dist = getDistance(startPos, charPos);
+						if (dist < bestDistance)
+						{
+							bestDistance = dist;
+							bestLoc = charPos;
+						}
+					}
+
+				}
+			}
+			return bestLoc;
+		}
+
+		private int getDistance(RowColPair pos1, RowColPair pos2)
+		{
+			int rowDist = Math.Abs(pos1.Row - pos2.Row);
+			int colDist = Math.Abs(pos1.Col - pos2.Col);
+			return Math.Max(rowDist, colDist);
 		}
 
 		private RowColPair getLocationByID(int? v)
