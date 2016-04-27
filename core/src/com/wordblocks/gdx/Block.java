@@ -165,11 +165,14 @@ public class Block extends DrawableObject {
             r.height = width;
             r.setCenter(tempVec);
             shapeRenderer.setColor(charColor);
-            shapeRenderer.rect(outline.x, outline.y, outline.width, outline.height);
+            //shapeRenderer.rect(outline.x, outline.y, outline.width, outline.height);
+            roundedRect(shapeRenderer, outline.x, outline.y, outline.width, outline.height, 10);
             shapeRenderer.setColor(blockColor);
-            shapeRenderer.rect(r.x, r.y, r.width, r.height);
+            //shapeRenderer.rect(r.x, r.y, r.width, r.height);
+            roundedRect(shapeRenderer, r.x, r.y, r.width, r.height, pos.width/35.0f);
         } else
-            shapeRenderer.rect(pos.x, pos.y, pos.width, pos.height);
+            //shapeRenderer.rect(pos.x, pos.y, pos.width, pos.height);
+            roundedRect(shapeRenderer, pos.x, pos.y, pos.width, pos.height, pos.width/35.0f);
     }
 
     @Override
@@ -188,5 +191,22 @@ public class Block extends DrawableObject {
             font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - tempLetterWidth / 2, pos.y + pos.height / 2 + tempLetterHeight / 2);
         } else
             font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - letterWidth / 2, pos.y + pos.height / 2 + letterHeight / 2);
+    }
+
+    public void roundedRect(ShapeRenderer shapeRenderer, float x, float y, float width, float height, float radius){
+        // Central rectangle
+        shapeRenderer.rect(x + radius, y + radius, width - 2 * radius, height - 2 * radius);
+
+        // Four side rectangles, in clockwise order
+        shapeRenderer.rect(x + radius, y, width - 2 * radius, radius);
+        shapeRenderer.rect(x + width - radius, y + radius, radius, height - 2 * radius);
+        shapeRenderer.rect(x + radius, y + height - radius, width - 2 * radius, radius);
+        shapeRenderer.rect(x, y + radius, radius, height - 2 * radius);
+
+        // Four arches, clockwise too
+        shapeRenderer.arc(x + radius, y + radius, radius, 180f, 90f);
+        shapeRenderer.arc(x + width - radius, y + radius, radius, 270f, 90f);
+        shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f);
+        shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f);
     }
 }

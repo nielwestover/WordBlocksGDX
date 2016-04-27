@@ -31,7 +31,7 @@ namespace LevelSolver
 		public List<int> solveOrder = new List<int>();
 		public List<string> words;
 		public RowColPair curCell;
-		public Dictionary<string, UniqueLetter> uniqueLetters;
+		//public Dictionary<string, UniqueLetter> uniqueLetters;
 
 		internal Board copy()
 		{
@@ -45,7 +45,7 @@ namespace LevelSolver
 				b.curCell = new RowColPair(curCell.Row, curCell.Col);
 			b.curWord = curWord;
 			b.curLetterIndex = curLetterIndex;
-			b.uniqueLetters = uniqueLetters;
+			//b.uniqueLetters = uniqueLetters;
 			return b;
 		}
 
@@ -81,85 +81,85 @@ namespace LevelSolver
 					board[row, col] = c;
 				}
 			}
-			computeUniqueLetters();
-			foreach (var item in uniqueLetters)
-			{
-				if (item.Value == null)
-				{
-					Console.WriteLine("*************************************" + item.Key + "in level " + string.Join(" ", words.ToArray()) + "*********************************************"); 
-				}
-			}
+			//computeUniqueLetters();
+			//foreach (var item in uniqueLetters)
+			//{
+			//	if (item.Value == null)
+			//	{
+			//		Console.WriteLine("*************************************" + item.Key + "in level " + string.Join(" ", words.ToArray()) + "*********************************************"); 
+			//	}
+			//}
 		}
-		public class UniqueLetter
-		{
-			public int? id;
-			public int uniqueIndex;
-		}
-		private void computeUniqueLetters()
-		{
-			uniqueLetters = new Dictionary<string, UniqueLetter>();
-			for (int i = 0; i < words.Count; ++i)
-			{
-				string curWord = words[i];
-				uniqueLetters[curWord] = null;
-				string uniqueChar = getUniqueCharacter(curWord);
-				if (uniqueChar != "")
-					uniqueLetters[curWord] = new UniqueLetter() { id = findIdOfUniqueCharacter(uniqueChar), uniqueIndex = curWord.IndexOf(uniqueChar) };
-			}
-		}
+		//public class UniqueLetter
+		//{
+		//	public int? id;
+		//	public int uniqueIndex;
+		//}
+		//private void computeUniqueLetters()
+		//{
+		//	uniqueLetters = new Dictionary<string, UniqueLetter>();
+		//	for (int i = 0; i < words.Count; ++i)
+		//	{
+		//		string curWord = words[i];
+		//		uniqueLetters[curWord] = null;
+		//		string uniqueChar = getUniqueCharacter(curWord);
+		//		if (uniqueChar != "")
+		//			uniqueLetters[curWord] = new UniqueLetter() { id = findIdOfUniqueCharacter(uniqueChar), uniqueIndex = curWord.IndexOf(uniqueChar) };
+		//	}
+		//}
 
-		private int? findIdOfUniqueCharacter(string uniqueChar)
-		{
-			int? id = null;
-			for (int row = 0; row < dim; ++row)
-			{
-				for (int col = 0; col < dim; ++col)
-				{
-					if (board[row, col].c.Equals(uniqueChar))
-					{
-						if (id == null)
-							id = board[row, col].id;
-						else
-							return null;
-					}
-				}
-			}
-			return id;
-		}
+		//private int? findIdOfUniqueCharacter(string uniqueChar)
+		//{
+		//	int? id = null;
+		//	for (int row = 0; row < dim; ++row)
+		//	{
+		//		for (int col = 0; col < dim; ++col)
+		//		{
+		//			if (board[row, col].c.Equals(uniqueChar))
+		//			{
+		//				if (id == null)
+		//					id = board[row, col].id;
+		//				else
+		//					return null;
+		//			}
+		//		}
+		//	}
+		//	return id;
+		//}
 
 
-		private string getUniqueCharacter(string curWord)
-		{
-			for (int i = 0; i < curWord.Length; i++)
-			{
-				char c = curWord[i];
-				if (!charAppearsInOtherWords(c, curWord))
-					return c.ToString();
-				continue;
-			}
-			return "";
-		}
+		//private string getUniqueCharacter(string curWord)
+		//{
+		//	for (int i = 0; i < curWord.Length; i++)
+		//	{
+		//		char c = curWord[i];
+		//		if (!charAppearsInOtherWords(c, curWord))
+		//			return c.ToString();
+		//		continue;
+		//	}
+		//	return "";
+		//}
 
-		private bool charAppearsInOtherWords(char c, string curWord)
-		{
-			foreach (string item in words)
-			{
-				if (curWord == item)
-					continue;
-				for (int i = 0; i < item.Length; ++i)
-				{
-					if (c == item[i])
-						return true;
-				}
-			}
-			return false;
-		}
+		//private bool charAppearsInOtherWords(char c, string curWord)
+		//{
+		//	foreach (string item in words)
+		//	{
+		//		if (curWord == item)
+		//			continue;
+		//		for (int i = 0; i < item.Length; ++i)
+		//		{
+		//			if (c == item[i])
+		//				return true;
+		//		}
+		//	}
+		//	return false;
+		//}
 
 		internal List<RowColPair> getLetterLocationsNearby(string candidate, RowColPair cell)
 		{
 			RowColPair uniqueLoc = null;
-			if (uniqueLetters[curWord] != null)
-				getLocationByID(uniqueLetters[curWord].id);			
+			//if (uniqueLetters[curWord] != null)
+			//	getLocationByID(uniqueLetters[curWord].id);			
 			List<RowColPair> locs = new List<RowColPair>();
 			for (int row = -1; row < 2; ++row)
 			{
@@ -173,7 +173,7 @@ namespace LevelSolver
 						board[candRow, candCol].c.Equals(candidate) &&
 						!solveOrder.Contains(board[candRow, candCol].id))
 					{
-						if (uniqueLoc == null || closeEnoughToUniqueLetter(uniqueLoc, candRow, candCol))
+						//if (uniqueLoc == null || closeEnoughToUniqueLetter(uniqueLoc, candRow, candCol))
 							locs.Add(new RowColPair(candRow, candCol));
 					}
 				}
@@ -184,8 +184,8 @@ namespace LevelSolver
 		internal List<RowColPair> getLetterLocations(string letter)
 		{
 			RowColPair uniqueLoc = null;
-			if (uniqueLetters[curWord] != null)
-				getLocationByID(uniqueLetters[curWord].id);
+			//if (uniqueLetters[curWord] != null)
+			//	getLocationByID(uniqueLetters[curWord].id);
 			List<RowColPair> locs = new List<RowColPair>();
 			for (int row = 0; row < dim; ++row)
 			{
@@ -193,7 +193,7 @@ namespace LevelSolver
 				{
 					if (board[row, col] != null && board[row, col].c.Equals(letter))
 					{
-						if (uniqueLoc == null || closeEnoughToUniqueLetter(uniqueLoc, row, col))
+						//if (uniqueLoc == null || closeEnoughToUniqueLetter(uniqueLoc, row, col))
 						locs.Add(new RowColPair(row, col));
 					}
 				}
@@ -201,64 +201,64 @@ namespace LevelSolver
 			return locs;
 		}
 
-		private bool closeEnoughToUniqueLetter(RowColPair uniqueLoc, int row, int col)
-		{
-			//return true;
-			if (uniqueLetters[curWord] == null)
-				return true;//N/A
-			int letterDistance = Math.Abs(uniqueLetters[curWord].uniqueIndex - curLetterIndex);
-			int rowDist = Math.Abs(uniqueLoc.Row - row);
-			int colDist = Math.Abs(uniqueLoc.Col - col);
-			if (letterDistance >= Math.Max(rowDist, colDist))
-				return true;
-			return false;
-		}
+		//private bool closeEnoughToUniqueLetter(RowColPair uniqueLoc, int row, int col)
+		//{
+		//	//return true;
+		//	//if (uniqueLetters[curWord] == null)
+		//	//	return true;//N/A
+		//	int letterDistance = Math.Abs(uniqueLetters[curWord].uniqueIndex - curLetterIndex);
+		//	int rowDist = Math.Abs(uniqueLoc.Row - row);
+		//	int colDist = Math.Abs(uniqueLoc.Col - col);
+		//	if (letterDistance >= Math.Max(rowDist, colDist))
+		//		return true;
+		//	return false;
+		//}
 
-		private RowColPair getClosestCharacterPosition(string ch, RowColPair startPos)
-		{
-			int bestDistance = 100;
-			RowColPair bestLoc = null;
-			for (int row = 0; row < dim; ++row)
-			{
-				for (int col = 0; col < dim; ++col)
-				{
-					if (board[row, col] != null && board[row, col].c == ch)
-					{
-						RowColPair charPos = new RowColPair(row, col);
-						int dist = getDistance(startPos, charPos);
-						if (dist < bestDistance)
-						{
-							bestDistance = dist;
-							bestLoc = charPos;
-						}
-					}
+		//private RowColPair getClosestCharacterPosition(string ch, RowColPair startPos)
+		//{
+		//	int bestDistance = 100;
+		//	RowColPair bestLoc = null;
+		//	for (int row = 0; row < dim; ++row)
+		//	{
+		//		for (int col = 0; col < dim; ++col)
+		//		{
+		//			if (board[row, col] != null && board[row, col].c == ch)
+		//			{
+		//				RowColPair charPos = new RowColPair(row, col);
+		//				int dist = getDistance(startPos, charPos);
+		//				if (dist < bestDistance)
+		//				{
+		//					bestDistance = dist;
+		//					bestLoc = charPos;
+		//				}
+		//			}
 
-				}
-			}
-			return bestLoc;
-		}
+		//		}
+		//	}
+		//	return bestLoc;
+		//}
 
-		private int getDistance(RowColPair pos1, RowColPair pos2)
-		{
-			int rowDist = Math.Abs(pos1.Row - pos2.Row);
-			int colDist = Math.Abs(pos1.Col - pos2.Col);
-			return Math.Max(rowDist, colDist);
-		}
+		//private int getDistance(RowColPair pos1, RowColPair pos2)
+		//{
+		//	int rowDist = Math.Abs(pos1.Row - pos2.Row);
+		//	int colDist = Math.Abs(pos1.Col - pos2.Col);
+		//	return Math.Max(rowDist, colDist);
+		//}
 
-		private RowColPair getLocationByID(int? v)
-		{
-			if (v == null)
-				return null;
-			for (int row = 0; row < dim; ++row)
-			{
-				for (int col = 0; col < dim; ++col)
-				{
-					if (board[row, col] != null && board[row, col].id == v)
-						return new RowColPair(row, col);
-				}
-			}
-			return null;
-		}
+		//private RowColPair getLocationByID(int? v)
+		//{
+		//	if (v == null)
+		//		return null;
+		//	for (int row = 0; row < dim; ++row)
+		//	{
+		//		for (int col = 0; col < dim; ++col)
+		//		{
+		//			if (board[row, col] != null && board[row, col].id == v)
+		//				return new RowColPair(row, col);
+		//		}
+		//	}
+		//	return null;
+		//}
 
 		public Board(int rows, int cols)
 		{
@@ -298,34 +298,34 @@ namespace LevelSolver
 			}
 		}
 
-		public void print()
-		{
-			//System.Console.WriteLine("******************************");
-			foreach (var item in words)
-			{
-				System.Console.Write(item + " ");
-			}
-			System.Console.WriteLine();
-			//row
-			for (int row = dim - 1; row >= 0; --row)
-			{
-				//col
-				for (int col = 0; col < dim; ++col)
-				{
-					if (board[row, col] != null)
-						if (curCell != null && curCell.equals(row, col))
-							System.Console.Write("*" + board[row, col].c + "*");
-						else if (solveOrder.Contains(board[row, col].id))
-							System.Console.Write("-" + board[row, col].c + "-");
-						else
-							System.Console.Write(" " + board[row, col].c + " ");
-					else
-						System.Console.Write(" . ");
-				}
-				System.Console.WriteLine();
-			}
-			System.Console.WriteLine();
-		}
+		//public void print()
+		//{
+		//	//System.Console.WriteLine("******************************");
+		//	foreach (var item in words)
+		//	{
+		//		System.Console.Write(item + " ");
+		//	}
+		//	System.Console.WriteLine();
+		//	//row
+		//	for (int row = dim - 1; row >= 0; --row)
+		//	{
+		//		//col
+		//		for (int col = 0; col < dim; ++col)
+		//		{
+		//			if (board[row, col] != null)
+		//				if (curCell != null && curCell.equals(row, col))
+		//					System.Console.Write("*" + board[row, col].c + "*");
+		//				else if (solveOrder.Contains(board[row, col].id))
+		//					System.Console.Write("-" + board[row, col].c + "-");
+		//				else
+		//					System.Console.Write(" " + board[row, col].c + " ");
+		//			else
+		//				System.Console.Write(" . ");
+		//		}
+		//		System.Console.WriteLine();
+		//	}
+		//	System.Console.WriteLine();
+		//}
 
 	}
 }

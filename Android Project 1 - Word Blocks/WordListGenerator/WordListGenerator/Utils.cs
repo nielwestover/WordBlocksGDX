@@ -8,8 +8,6 @@ namespace WordListGenerator
 {
 	public static class Utils
 	{
-		static Random rand = new Random();
-
 		internal static bool wordMatchesLevel(string curWord, List<string> levelWords, string allChars)
 		{
 			if (levelWords.Count == 0)
@@ -43,51 +41,61 @@ namespace WordListGenerator
 
 		}
 
-		internal static int getMaxFrequency(int dimension)
-		{
-			switch (dimension)
-			{
-				case 3:
-					return 0;
-				case 4:
-					return 0;
-				case 5:
-					return 0;
-				case 6:
-					return 1;
-				case 7:
-					return 2;
-				default:
-					throw new Exception("Should not have gotten here!");
-
-			}
-		}
-
 		internal static int GetDesiredWordLength(int charsLeft)
 		{
-			switch(charsLeft)
+			int rand = RandomNumber(0, 10);
+			
+			switch (charsLeft)
 			{
 				case 3:
 				case 4:
 				case 5:
 					return charsLeft;
-				case 6:
+				case 6:					
 					return 6;
 				case 7:
-					return 4;
-				case 8:
+					if (rand < 5)
+						return 4;
+					return 7;
+				case 8:					
+					if (rand < 4) return 4;
+					if (rand < 5) return 5;
+					return 8;
 				case 9:
+					if (rand < 3) return 4;
+					if (rand < 3) return 5;
+					if (rand < 6) return 6;
+					return 9;
 				case 10:
 				case 11:
-					return rand.Next(6, charsLeft - 2);
+					if (rand < 1) return 3;
+					if (rand < 2) return 4;
+					if (rand < 3) return 5;
+					if (rand < 6) return 6;
+					return 7;
 				default:
 					if (charsLeft > 11)
-						return rand.Next(6, 10);
+					{
+						//if (rand < 2) return RandomNumber(3, 10);
+						//if (rand < 4) return RandomNumber(5, 10);
+						//if (rand < 6) return RandomNumber(6, 10);
+						//if (rand < 8) return RandomNumber(7, 10);
+						return RandomNumber(4, 10);
+					}
 					throw new Exception("Should not have gotten here!");
 
 			}
 		}
-
+		//Function to get random number
+		private static readonly Random random = new Random(0);
+		private static readonly object syncLock = new object();
+		public static int RandomNumber(int min, int max)
+		{
+			lock (syncLock)
+			{ // synchronize
+				return random.Next(min, max);
+			}
+		}
 		internal static void printLevel(List<string> level)
 		{
 			foreach (var item in level)

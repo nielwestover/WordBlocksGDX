@@ -1,15 +1,11 @@
 package com.wordblocks.gdx;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import helpers.IntPair;
+import helpers.RowColPair;
 
 /**
  * Created by a2558 on 2/5/2016.
@@ -51,7 +47,7 @@ public class Game {
 
     public DrawDimensions dims;
     public String selectedWord = "";
-    public List<IntPair> selectedChain = new ArrayList<IntPair>();
+    public List<RowColPair> selectedChain = new ArrayList<RowColPair>();
 
     public Answer getSelectedWord(String selectedWord){
         for (int i = 0; i < answers.size(); ++i){
@@ -64,8 +60,8 @@ public class Game {
 
     public void removeWordFound(){
         for (int i = 0; i < selectedChain.size(); ++i){
-            IntPair curBlock = selectedChain.get(i);
-            grid[curBlock.first][curBlock.second].block = null;
+            RowColPair curBlock = selectedChain.get(i);
+            grid[curBlock.Row][curBlock.Col].block = null;
         }
         getSelectedWord(selectedWord).found = true;
     }
@@ -78,7 +74,7 @@ public class Game {
             }
         }
         selectedWord = "";
-        selectedChain = new ArrayList<IntPair>();
+        selectedChain = new ArrayList<RowColPair>();
     }
 
     public void dropBlocks(){

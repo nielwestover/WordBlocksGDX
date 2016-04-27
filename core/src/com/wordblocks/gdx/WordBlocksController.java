@@ -1,7 +1,7 @@
 package com.wordblocks.gdx;
 
 import com.badlogic.gdx.math.Rectangle;
-import helpers.IntPair;
+import helpers.RowColPair;
 
 /**
  * Created by a2558 on 2/21/2016.
@@ -12,8 +12,8 @@ public class WordBlocksController {
     public boolean fingerMoving = false;
     public float X;
     public float Y;
-    private IntPair selectedBlock;
-    private IntPair previousSelectedBlock;
+    private RowColPair selectedBlock;
+    private RowColPair previousSelectedBlock;
     Game game;
 
     public enum GameStates {
@@ -54,8 +54,8 @@ public class WordBlocksController {
                 break;
             case WAIT_FOR_PRESS:
                 if (fingerPress) {
-                    selectedBlock = new IntPair(-1, -1);
-                    previousSelectedBlock = new IntPair(-1, -1);
+                    selectedBlock = new RowColPair(-1, -1);
+                    previousSelectedBlock = new RowColPair(-1, -1);
                     gameState = GameStates.FINGER_DOWN;
                     update();
                 }
@@ -159,16 +159,16 @@ public class WordBlocksController {
 
     private boolean isSelectedBlockValid() {
         //initial case
-        if (previousSelectedBlock.first == -1) {
+        if (previousSelectedBlock.Row == -1) {
             previousSelectedBlock = selectedBlock;
             return true;
         }
         if (selectedBlock == previousSelectedBlock)
             return false;
-        if (game.grid[selectedBlock.first][selectedBlock.second].block.getSelected())
+        if (game.grid[selectedBlock.Row][selectedBlock.Col].block.getSelected())
             return false;
-        int xDist = Math.abs(selectedBlock.first - previousSelectedBlock.first);
-        int yDist = Math.abs(selectedBlock.second - previousSelectedBlock.second);
+        int xDist = Math.abs(selectedBlock.Row - previousSelectedBlock.Row);
+        int yDist = Math.abs(selectedBlock.Col - previousSelectedBlock.Col);
         if (xDist > 1 || yDist > 1)
             return false;
         previousSelectedBlock = selectedBlock;
@@ -181,21 +181,21 @@ public class WordBlocksController {
                 if (game.grid[i][j].block == null)
                     continue;
                 if (game.grid[i][j].block.isTouched(X, Y, game.dims.inset))
-                    selectedBlock = new IntPair(i, j);
+                    selectedBlock = new RowColPair(i, j);
 
             }
         }
     }
 
     private void setSelectedBlock() {
-        int i = selectedBlock.first;
-        int j = selectedBlock.second;
+        int i = selectedBlock.Row;
+        int j = selectedBlock.Col;
         if (i == -1 || j == -1)
             return;
         if (game.grid[i][j].block != null && !game.grid[i][j].block.getSelected()) {
             game.grid[i][j].block.setSelected(true);
             game.selectedWord = game.selectedWord.concat(game.grid[i][j].block.letter + "");
-            game.selectedChain.add(new IntPair(i, j));
+            game.selectedChain.add(new RowColPair(i, j));
         }
     }
 }

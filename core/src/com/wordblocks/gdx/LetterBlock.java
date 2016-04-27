@@ -6,4 +6,6 @@ package com.wordblocks.gdx;
 public class LetterBlock{
     public char c;
     public int h;
+    public String word;
+    public int id;
 }

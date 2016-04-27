@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordListGenerator", "WordListGenerator\WordListGenerator.csproj", "{F63354A1-1103-4B13-BBED-43683477D13A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListGeneratorConsole", "ListGeneratorConsole\ListGeneratorConsole.csproj", "{6FB805AD-F164-43FA-95AA-C0E39A595584}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F63354A1-1103-4B13-BBED-43683477D13A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F63354A1-1103-4B13-BBED-43683477D13A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F63354A1-1103-4B13-BBED-43683477D13A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F63354A1-1103-4B13-BBED-43683477D13A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FB805AD-F164-43FA-95AA-C0E39A595584}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FB805AD-F164-43FA-95AA-C0E39A595584}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FB805AD-F164-43FA-95AA-C0E39A595584}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FB805AD-F164-43FA-95AA-C0E39A595584}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

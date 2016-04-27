@@ -12,56 +12,44 @@ namespace WordListGenerator
 	{
 		public Dictionary<string, int> freq = new Dictionary<string, int>();
 		private List<List<string>> words;
-		public ListGen(string file)
+		public ListGen(List<List<string>> allWords)
 		{
-			string allWords = File.ReadAllText(file);
-			words = JsonConvert.DeserializeObject<List<List<string>>>(allWords);
+			words = allWords;
 		}
-		Random rand = new Random();
 
 		List<List<string>> levelList;
 		public List<List<string>> Generate(int dimension, int numLevels)
 		{
 			levelList = new List<List<string>>();
-			int frequency = 0;
 			for (int i = 0; i < numLevels; ++i)
 			{
 				int maxChars = dimension * dimension;
-				frequency = 0;
-				List<string> level = GenerateLevel(maxChars, frequency);
+				List<string> level = GenerateLevel(maxChars);
 				while (level == null || level.Count == 0)
 				{
-					++frequency;
-					int maxFreq = Utils.getMaxFrequency(dimension);
-					if (dimension == 7 && levelList.Count > 170)
-						maxFreq = 2;
-					level = GenerateLevel(maxChars, Math.Min(maxFreq, frequency));
+					level = GenerateLevel(maxChars);
 				}
 				levelList.Add(level);
 				System.Console.Write(i + ": ");
 				Utils.printLevel(level);
 			}
-			System.Console.WriteLine("Words used: " + freq.Count);
 			return levelList;
 		}
 
-		private List<string> GenerateLevel(int maxChars, int frequency)
+		private List<string> GenerateLevel(int maxChars)
 		{
 			List<string> levelWords = new List<string>();
 			string finalChars = "";
 			string curWord = "";
 			int desiredLength;
 			int count = 0;
-			while (finalChars.Length != maxChars && ++count < maxChars * 5000)
+			while (finalChars.Length != maxChars && ++count < maxChars * 100)
 			{
-				if (maxChars == 9)
-					desiredLength = 3;
-				else
-					desiredLength = Utils.GetDesiredWordLength(maxChars - finalChars.Length);
-				curWord = getRandomWordOfSpecifiedLengthAndFrequency(desiredLength, frequency);
-				
-				if (levelWords.Contains(curWord))
-					continue;
+				desiredLength = Utils.GetDesiredWordLength(maxChars - finalChars.Length);
+				curWord = getRandomWordOfSpecifiedLength(desiredLength);
+
+				while (levelWords.Contains(curWord))
+					curWord = getRandomWordOfSpecifiedLength(desiredLength);
 				int newLength = curWord.Length + finalChars.Length;
 				if (newLength == maxChars || newLength + 3 <= maxChars)
 				{
@@ -74,36 +62,82 @@ namespace WordListGenerator
 				}
 			}
 			if (finalChars.Length != maxChars)
+				return null;			
+			if (!isQualityLevel(levelWords))
 				return null;
 			markUsed(levelWords);
 			return levelWords;
 		}
 
-		private void markUsed(List<string> levelWords)
+		private bool isQualityLevel(List<string> levelWords)
 		{
-			foreach (string item in levelWords)
+			if (levelWords.Count == 8 || levelWords.Count == 9)
+				return false;
+			foreach (var item in levelWords)
 			{
-				if (freq.ContainsKey(item))
-					freq[item]++;
-				else
-					freq[item] = 1;
+				string begin = item.Substring(0, item.Length - 1);
+				string end = item.Substring(1, item.Length - 1);
+				int beginCount = 0;
+				int endCount = 0;
+				foreach (var word in levelWords)
+				{
+					if (item.Length != word.Length)
+						continue;
+					string sub1 = word.Substring(0, begin.Length);
+					if (sub1.Equals(begin))
+						beginCount++;
+					string sub2 = word.Substring(1, end.Length);
+					if (sub2.Equals(end))
+						endCount++;
+					if (beginCount > 1 || endCount > 1)
+					{
+						//Console.WriteLine("Rejecting " + string.Join(" ", levelWords.ToArray()));
+						return false;
+					}
+				}
 			}
+			foreach (var item in levelWords)
+			{				
+				string begin = item.Substring(0, 3);
+				string end = item.Substring(item.Length - 3, 3);
+				int beginCount = 0;
+				int endCount = 0;
+				foreach (var word in levelWords)
+				{					
+					string sub1 = word.Substring(0, 3);
+					if (sub1.Equals(begin))
+						beginCount++;
+					string sub2 = word.Substring(word.Length - 3, 3);
+					if (sub2.Equals(end))
+						endCount++;
+					if (beginCount > 1 || endCount > 1)
+					{
+						//Console.WriteLine("Rejecting " + string.Join(" ", levelWords.ToArray()));
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 
-		private string getRandomWordOfSpecifiedLengthAndFrequency(int desiredLength, int frequency)
+	private void markUsed(List<string> levelWords)
+	{
+		foreach (var item in levelWords)
 		{
-			//desiredLength 3 -> list at index 0
-			//desiredLength 4 -> list at index 1
-			//hence desiredLength -3
-			while (true)
-			{
-				int index = rand.Next(0, words[desiredLength - 3].Count);
-				string word = words[desiredLength - 3][index];
-				if (!freq.ContainsKey(word))
-					return word;
-				if (freq[word] <= frequency)
-					return word;
-			}
+			words[item.Length - 3].Remove(item);
 		}
 	}
+
+	private string getRandomWordOfSpecifiedLength(int desiredLength)
+	{
+		//desiredLength 3 -> list at index 0
+		//desiredLength 4 -> list at index 1
+		//hence desiredLength -3
+		{
+			int index = Utils.RandomNumber(0, words[desiredLength - 3].Count);
+			string word = words[desiredLength - 3][index];
+			return word;
+		}
+	}
+}
 }

@@ -13,17 +13,54 @@ namespace ListGeneratorConsole
 	{
 		static void Main(string[] args)
 		{
-			ListGen listGen = new ListGen(@"D:\Git\Android Project 1 - Word Blocks\4000 words.json");
+			List<List<string>> words_4000 = JsonConvert.DeserializeObject<List<List<string>>>(File.ReadAllText(@"D:\Git\WordBlocksGDX\Android Project 1 - Word Blocks\4000 words.json"));
+
+			List<List<List<string>>> usedWords = JsonConvert.DeserializeObject<List<List<List<string>>>>(File.ReadAllText(@"D:\WORD\usedWords7.json"));
+			words_4000 = removeUsedWords(usedWords, words_4000);
+
+			ListGen listGen = new ListGen(words_4000);
 			List<List<List<string>>> allLevels = new List<List<List<string>>>();
-			allLevels.Add(listGen.Generate(3, 20));
-			allLevels.Add(listGen.Generate(4, 100));
-			allLevels.Add(listGen.Generate(5, 100));
-			allLevels.Add(listGen.Generate(6, 150));
-			allLevels.Add(listGen.Generate(7, 150));
-			System.Console.WriteLine("TOTAL WORDS USED: " + listGen.freq.Count);
+			allLevels.Add(listGen.Generate(7, 70));
+
+			//words_4000 = JsonConvert.DeserializeObject<List<List<string>>>(File.ReadAllText(@"D:\Git\WordBlocksGDX\Android Project 1 - Word Blocks\4000 words.json"));
+			//allLevels.Add(listGen.Generate(7, 200));
 			string allText = JsonConvert.SerializeObject(allLevels);
+			//File.WriteAllText("D:/allLevelsSoFar3-5.json", allText);
+			//allLevels.Add(listGen.Generate(6, 140));
+			//allText = JsonConvert.SerializeObject(allLevels);
+			//File.WriteAllText("D:/allLevelsSoFar6.json", allText);
+			//allLevels.Add(listGen.Generate(7, 180));
+			allText = JsonConvert.SerializeObject(allLevels);
 			File.WriteAllText("D:/allLevels.json", allText);
 			Console.ReadLine();
+		}
+		private static List<List<string>> removeUsedWords(List<List<List<string>>> usedWords, List<List<string>> words_4000)
+		{
+			foreach (var dimLevel in usedWords)
+			{
+				foreach (var level in dimLevel)
+				{
+					foreach (string usedWord in level)
+					{
+						removeWordFrom4000(usedWord, words_4000);
+					}
+
+				}
+			}
+			return words_4000;
+		}
+
+		private static void removeWordFrom4000(string usedWord, List<List<string>> words_4000)
+		{
+			foreach (List<string> dimLevel in words_4000)
+			{
+				if (dimLevel.Contains(usedWord))
+				{
+					dimLevel.Remove(usedWord);
+					return;
+				}
+
+			}
 		}
 	}
 }

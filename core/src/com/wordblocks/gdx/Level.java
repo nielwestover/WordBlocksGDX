@@ -9,8 +9,6 @@ public class Level {
     public List<String> hints;
     public List<String> words;
     public List<LetterBlock> board;
-
-
 }
 
 
