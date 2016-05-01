@@ -2,6 +2,7 @@ package com.wordblocks.gdx;
 
 import com.badlogic.gdx.math.Rectangle;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +15,10 @@ public class Game {
 
     Rectangle refresh;
     Rectangle skipNext;
-    public Game(Level level){
-        int dim = (int)Math.sqrt(level.board.size());
+    Rectangle giveHint;
+
+    public Game(Level level) {
+        int dim = (int) Math.sqrt(level.board.size());
         grid = new Cell[dim][dim];
         initBoard();
         answers = new ArrayList();
@@ -24,23 +27,25 @@ public class Game {
         initBoard(level.board);
     }
 
-    private void initBoard(){
-        for (int row = 0; row < grid.length; row ++)
+    private void initBoard() {
+        for (int row = 0; row < grid.length; row++)
             for (int col = 0; col < grid[row].length; col++)
                 grid[row][col] = new Cell();
         dims = new DrawDimensions();
     }
 
     List<Answer> answers;
-    private void initBoard(List<LetterBlock> board){
+
+    private void initBoard(List<LetterBlock> board) {
         int index = 0;
-        for (int j = grid.length - 1; j >= 0; --j){
-            for (int i = 0; i < grid[j].length; ++i){
+        for (int j = grid.length - 1; j >= 0; --j) {
+            for (int i = 0; i < grid[j].length; ++i) {
                 Block block = new Block();
                 block.letter = board.get(index).c;
                 block.hintIndex = board.get(index).h;
-                index++;
+                block.id = board.get(index).id;
                 grid[i][j].block = block;
+                index++;
             }
         }
     }
@@ -49,8 +54,8 @@ public class Game {
     public String selectedWord = "";
     public List<RowColPair> selectedChain = new ArrayList<RowColPair>();
 
-    public Answer getSelectedWord(String selectedWord){
-        for (int i = 0; i < answers.size(); ++i){
+    public Answer getSelectedWord(String selectedWord) {
+        for (int i = 0; i < answers.size(); ++i) {
             Answer ans = answers.get(i);
             if (ans.word.equals(selectedWord) && !ans.found)
                 return ans;
@@ -58,15 +63,15 @@ public class Game {
         return null;
     }
 
-    public void removeWordFound(){
-        for (int i = 0; i < selectedChain.size(); ++i){
+    public void removeWordFound() {
+        for (int i = 0; i < selectedChain.size(); ++i) {
             RowColPair curBlock = selectedChain.get(i);
             grid[curBlock.Row][curBlock.Col].block = null;
         }
         getSelectedWord(selectedWord).found = true;
     }
 
-    public void deselectAll(){
+    public void deselectAll() {
         for (int i = 0; i < grid.length; ++i) {
             for (int j = 0; j < grid[i].length; ++j) {
                 if (grid[i][j].block != null)
@@ -77,16 +82,16 @@ public class Game {
         selectedChain = new ArrayList<RowColPair>();
     }
 
-    public void dropBlocks(){
+    public void dropBlocks() {
         boolean blockDropped = true;
-        while(blockDropped) {
+        while (blockDropped) {
             blockDropped = false;
             for (int i = grid.length - 1; i >= 0; --i) {
                 for (int j = grid[i].length - 1; j >= 0; --j) {
-                    if (grid[i][j].block == null){
-                        if (j - 1 >= 0 && grid[i][j-1].block != null) {
-                            grid[i][j].block = grid[i][j-1].block;
-                            grid[i][j-1].block = null;
+                    if (grid[i][j].block == null) {
+                        if (j - 1 >= 0 && grid[i][j - 1].block != null) {
+                            grid[i][j].block = grid[i][j - 1].block;
+                            grid[i][j - 1].block = null;
                             blockDropped = true;
                         }
                     }
@@ -95,25 +100,33 @@ public class Game {
         }
     }
 
-    public int blocksLeft(){
+    public int blocksLeft() {
         int count = 0;
         for (int i = 0; i < grid.length; ++i) {
-            for (int j = 0; j < grid[i].length; ++j){
+            for (int j = 0; j < grid[i].length; ++j) {
                 if (grid[i][j].block != null)
                     ++count;
             }
         }
         return count;
     }
+    public Block getBlockByID(int id){
+        for (int i = 0; i < grid.length; ++i) {
+            for (int j = 0; j < grid[i].length; ++j) {
+                if (grid[i][j].block != null && grid[i][j].block.id == id) {
+                    return grid[i][j].block;
+                }
+            }
+        }
+        return null;
+    }
 
-
-
-    public class Cell{
+    public class Cell {
         Block block;
         Rectangle cellPos;
     }
 
-    public class DrawDimensions{
+    public class DrawDimensions {
         float screenWidth;
         float scalar;
         float boxGap;
@@ -123,15 +136,42 @@ public class Game {
         float inset;
     }
 
-    public class Answer{
+    public class Answer {
         boolean found = false;
         String word;
 
-        public Answer(String word){
+        public Answer(String word) {
             this.word = word;
         }
     }
 
-    public Cell [][] grid;
+
+    public ArrayList<String> remainingWords() {
+        ArrayList remaining = new ArrayList();
+        for (Answer ans : answers)
+            if (!ans.found)
+                remaining.add(ans.word);
+        return remaining;
+    }
+
+    public Cell[][] grid;
+
+    public ArrayList<LetterBlock> boardToList() {
+        ArrayList<LetterBlock> board = new ArrayList<LetterBlock>();
+        for (int j = grid.length - 1; j >= 0; --j) {
+            for (int i = 0; i < grid[j].length; ++i) {
+                LetterBlock l;
+                if (grid[i][j].block == null)
+                    l = null;
+                else {
+                    l = new LetterBlock();
+                    l.id = grid[i][j].block.id;
+                    l.c = grid[i][j].block.letter;
+                }
+                board.add(l);
+            }
+        }
+        return board;
+    }
 }
 

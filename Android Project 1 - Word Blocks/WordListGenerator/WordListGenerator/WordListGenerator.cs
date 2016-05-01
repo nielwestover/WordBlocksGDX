@@ -56,23 +56,32 @@ namespace WordListGenerator
 					//see if it's a good word to add to the level
 					if (Utils.wordMatchesLevel(curWord, levelWords, finalChars))
 					{
-						levelWords.Add(curWord);
-						finalChars += curWord;
+						if (wordAdheresToQuality(levelWords, curWord))
+						{
+							levelWords.Add(curWord);
+							finalChars += curWord;
+						}
 					}
 				}
 			}
 			if (finalChars.Length != maxChars)
-				return null;			
-			if (!isQualityLevel(levelWords))
+				return null;
+			if (levelWords.Count == 7 || levelWords.Count == 8 || levelWords.Count == 9)
 				return null;
 			markUsed(levelWords);
 			return levelWords;
 		}
 
+		private bool wordAdheresToQuality(List<string> levelWords, string curWord)
+		{
+			List<string> newList = new List<string>(levelWords);
+			newList.Add(curWord);
+			return isQualityLevel(levelWords);
+		}
+
 		private bool isQualityLevel(List<string> levelWords)
 		{
-			if (levelWords.Count == 8 || levelWords.Count == 9)
-				return false;
+			
 			foreach (var item in levelWords)
 			{
 				string begin = item.Substring(0, item.Length - 1);

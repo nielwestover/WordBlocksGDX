@@ -18,10 +18,12 @@ public class Board {
     public List<LetterBlock> ToList()
     {
         List<LetterBlock> l = new ArrayList<LetterBlock>();
+        int index = 0;
         for (int row = 0; row < dim; ++row)
         {
             for (int col = 0; col < dim; ++col)
             {
+                board[row][col].id = index++;
                 l.add(board[row][col]);
             }
         }

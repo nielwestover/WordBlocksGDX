@@ -12,6 +12,7 @@ public class DrawableObject {
     Rectangle pos = new Rectangle();
     Rectangle targetPos = new Rectangle();
     float velocity;
+    float angle;
 
     void update(){};
     void renderShapes(ShapeRenderer shapeRenderer){};

@@ -84,9 +84,12 @@ public class WordBlocksRenderer {
     }
 
     Game game;
+    WordBlocksController wbc;
     float origBlockFontScale;
 
+
     public void draw(WordBlocksController wbc) {
+        this.wbc = wbc;
         game = wbc.game;
         if (game == null)
             return;
@@ -165,13 +168,15 @@ public class WordBlocksRenderer {
 
         shapeRenderer.setColor(1, 0, 0, 1);
         shapeRenderer.rect(game.skipNext.x, game.skipNext.y, game.skipNext.width, game.skipNext.height);
+        shapeRenderer.setColor(0, 1, 0, 1);
+        shapeRenderer.rect(game.giveHint.x, game.giveHint.y, game.giveHint.width, game.giveHint.height);
         shapeRenderer.end();
 
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
 
         fontAnswers.setColor(Color.WHITE);
-        fontAnswers.draw(spriteBatch, (MyApplication.curLevelIndex + 1) + "", 160.0f, 50.0f);
+        fontAnswers.draw(spriteBatch, (MyApplication.curPackIndex + 1) + " : " + (MyApplication.curLevelIndex + 1) + "", 160.0f, 50.0f);
 
         spriteBatch.end();
     }
@@ -200,6 +205,8 @@ public class WordBlocksRenderer {
 
     private void drawBlocks(Game game) {
         logger.log();
+        if (wbc.hintSystem != null && wbc.hintSystem.getHintIndex() > 0)
+            Block.hintLoop.loopHintColors();
         //float inset = .13f * game.dims.boxDim;
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

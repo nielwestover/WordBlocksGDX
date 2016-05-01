@@ -1,6 +1,10 @@
 package com.wordblocks.gdx;
 
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.math.Rectangle;
+
+import java.util.ArrayList;
+
 import helpers.RowColPair;
 
 /**
@@ -26,17 +30,19 @@ public class WordBlocksController {
         CHECK_LEVEL_FINISHED,
         GAME_OVER
     }
+
     public float width, height;
     GameScreen Overlord;
 
-    public WordBlocksController(float width, float height, GameScreen overlord){
+    public WordBlocksController(float width, float height, GameScreen overlord) {
         Overlord = overlord;
         this.width = width;
         this.height = height;
     }
+
     public GameStates gameState = GameStates.INIT;
 
-    public void init(){
+    public void init() {
         gameState = GameStates.INIT;
     }
 
@@ -46,6 +52,10 @@ public class WordBlocksController {
                 game = new Game(MyApplication.getCurLevel());
                 game.refresh = new Rectangle(width - 150, 0, 150, 150);
                 game.skipNext = new Rectangle(0, 0, 150, 150);
+                game.giveHint = new Rectangle(width / 2 - 75, 0, 150, 150);
+                hintSystem = null;
+                Block.hintLoop.reset();
+
                 initGameDimensions();
 
                 //always reinitialize the renderer when starting over
@@ -77,6 +87,8 @@ public class WordBlocksController {
                 if (game.getSelectedWord(game.selectedWord) != null) {
                     gameState = GameStates.ANIMATE_DROP_BLOCKS;
                     game.removeWordFound();
+                    hintSystem = null;
+                    removeHints();
                     game.dropBlocks();
                     setBlocksToFall();
                 } else {
@@ -93,11 +105,9 @@ public class WordBlocksController {
                 if (game.blocksLeft() == 0) {
                     if (MyApplication.incrementCurLevel()) {
                         gameState = GameStates.INIT;
-                    }
-                    else
+                    } else
                         gameState = GameStates.GAME_OVER;
-                }
-                else
+                } else
                     gameState = GameStates.WAIT_FOR_PRESS;
             case GAME_OVER:
                 break;
@@ -106,7 +116,7 @@ public class WordBlocksController {
         updateBlocks();
     }
 
-    private void setBlocksToFall(){
+    private void setBlocksToFall() {
         for (int i = 0; i < game.grid.length; ++i) {
             for (int j = 0; j < game.grid[i].length; ++j) {
                 if (game.grid[i][j].block == null)
@@ -116,6 +126,7 @@ public class WordBlocksController {
             }
         }
     }
+
     private void updateBlocks() {
         for (int i = 0; i < game.grid.length; ++i) {
             for (int j = 0; j < game.grid[i].length; ++j) {
@@ -198,4 +209,29 @@ public class WordBlocksController {
             game.selectedChain.add(new RowColPair(i, j));
         }
     }
+
+    public void giveHint() {
+        if (hintSystem == null)
+            hintSystem = new HintSystem(game);
+        int id = hintSystem.getHint();
+        //check for error codes -1 and -2
+        if (id >= 0) {
+            Block b = game.getBlockByID(id);
+            if (b != null)
+                b.setIsHint(true);
+        }
+    }
+
+    public HintSystem hintSystem = null;
+
+    public void removeHints() {
+        for (int i = 0; i < game.grid.length; ++i) {
+            for (int j = 0; j < game.grid[i].length; ++j) {
+                if (game.grid[i][j].block == null)
+                    continue;
+                game.grid[i][j].block.setIsHint(false);
+            }
+        }
+    }
+
 }

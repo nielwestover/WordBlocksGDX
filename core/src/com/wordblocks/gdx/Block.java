@@ -8,10 +8,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 
 public class Block extends DrawableObject {
     char letter;
     int hintIndex;
+    int id;
     float letterWidth;
     float letterHeight;
     private boolean selected;
@@ -21,14 +24,31 @@ public class Block extends DrawableObject {
     float blockScale;
     Vector2 center;
 
+    private boolean isHint;
+
     public Block() {
         curState = AnimState.ANIM_START;
         blockScale = 1;
     }
 
+    public boolean getIsHint() {
+        return isHint;
+    }
+
+    private boolean isFirstHint = false;
+
+    public void setIsHint(boolean isHint) {
+        this.isHint = isHint;
+        if (curState == AnimState.NORMAL) {
+            curState = AnimState.NORMALTOHINT;
+        }
+    }
+
     public static enum AnimState {
         ANIM_START,
         NORMAL,
+        NORMALTOHINT,
+        NORMALTOHINT_ANIM,
         NORMALTOSELECTED,
         NORMALTOSELECTED_ANIM,
         SELECTED,
@@ -71,21 +91,58 @@ public class Block extends DrawableObject {
         return false;
     }
 
-    private float maxInterpSteps = 20;
-    private int interpSteps = 0;
+    static HintLoop hintLoop;
+    float maxInterpSteps = 20;
+    int interpSteps = 0;
+    int hintInterpSteps = 5;
+    boolean hintAnimIncreasing = true;
+    int hintAnimRotateCount = 0;
 
     @Override
     void update() {
         switch (curState) {
             case ANIM_START:
                 curState = AnimState.NORMAL;
+                hintLoop = new HintLoop();
                 break;
             case NORMAL:
-                blockColor = Color.WHITE.cpy();
-                charColor = Color.BLACK.cpy();
+                if (isHint) {
+                    blockColor.set(1.0f - hintLoop.val, 1.0f - hintLoop.val, 1.0f - hintLoop.val, 1);
+                    charColor.set(hintLoop.val, hintLoop.val, hintLoop.val, 1);
+                } else {
+                    blockColor = Color.WHITE.cpy();
+                    charColor = Color.BLACK.cpy();
+                }
                 if (selected) {
                     curState = AnimState.NORMALTOSELECTED;
                     update();
+                }
+                break;
+            case NORMALTOHINT:
+                interpSteps = (int) (.3333f * hintInterpSteps);
+                curState = AnimState.NORMALTOHINT_ANIM;
+                hintAnimIncreasing = true;
+                hintAnimRotateCount = 0;
+            case NORMALTOHINT_ANIM:
+                if (hintAnimRotateCount < 3) {
+                    if (hintAnimIncreasing) {
+                        if (interpSteps++ >= hintInterpSteps) {
+                            hintAnimIncreasing = false;
+                            hintAnimRotateCount++;
+                        }
+                    } else {
+                        if (interpSteps-- <= 0) {
+                            hintAnimIncreasing = true;
+                        }
+                    }
+                    float angleVal = Interpolation.sineOut.apply(interpSteps / (float) hintInterpSteps);
+                    angle = 350 + angleVal * 20;
+                    blockColor.set(1.0f - hintLoop.val, 1.0f - hintLoop.val, 1.0f - hintLoop.val, 1);
+                    charColor.set(hintLoop.val, hintLoop.val, hintLoop.val, 1);
+                } else {
+                    angle = 0;
+                    blockScale = 1.0f;
+                    curState = AnimState.NORMAL;
                 }
                 break;
             case NORMALTOSELECTED:
@@ -133,7 +190,7 @@ public class Block extends DrawableObject {
 
                 } else {
                     blockColor.set(1, 1, 1, 1);
-                    charColor.set(0,0,0, 1);
+                    charColor.set(0, 0, 0, 1);
                     curState = AnimState.NORMAL;
                     blockScale = 1f;
                 }
@@ -145,14 +202,16 @@ public class Block extends DrawableObject {
         }
     }
 
-    Vector2 tempVec = new Vector2();
+    Vector2 tmpCenter = new Vector2();
 
     @Override
     void renderShapes(ShapeRenderer shapeRenderer) {
         shapeRenderer.setColor(blockColor);
         shapeRenderer.identity();
+        tmpCenter = pos.getCenter(tmpCenter);
+
         if (blockScale != 1.0f) {
-            tempVec = pos.getCenter(tempVec);
+
             float width = blockScale * pos.width;
             float outlineWidth = Math.min(width * 1.1f, pos.width);
             com.badlogic.gdx.math.Rectangle r = new com.badlogic.gdx.math.Rectangle(pos);
@@ -160,40 +219,43 @@ public class Block extends DrawableObject {
 
             outline.width = outlineWidth;
             outline.height = outlineWidth;
-            outline.setCenter(tempVec);
+            outline.setCenter(tmpCenter);
             r.width = width;
             r.height = width;
-            r.setCenter(tempVec);
+            r.setCenter(tmpCenter);
             shapeRenderer.setColor(charColor);
             //shapeRenderer.rect(outline.x, outline.y, outline.width, outline.height);
             roundedRect(shapeRenderer, outline.x, outline.y, outline.width, outline.height, 10);
             shapeRenderer.setColor(blockColor);
             //shapeRenderer.rect(r.x, r.y, r.width, r.height);
-            roundedRect(shapeRenderer, r.x, r.y, r.width, r.height, pos.width/35.0f);
-        } else
+            roundedRect(shapeRenderer, r.x, r.y, r.width, r.height, pos.width / 35.0f);
+        } else {
             //shapeRenderer.rect(pos.x, pos.y, pos.width, pos.height);
-            roundedRect(shapeRenderer, pos.x, pos.y, pos.width, pos.height, pos.width/35.0f);
+            if (angle == 0)
+                roundedRect(shapeRenderer, pos.x, pos.y, pos.width, pos.height, pos.width / 35.0f);
+            else
+                shapeRenderer.rect(pos.x, pos.y, pos.width / 2, pos.height / 2, pos.width, pos.height, 1.f, 1.f, angle);
+        }
     }
 
     @Override
     void renderSprites(SpriteBatch spriteBatch, BitmapFont font) {
+
         font.setColor(charColor);
         font.getData().setScale(font.getData().scaleX * blockScale);
-        float tempLetterWidth = letterWidth;
-        float tempLetterHeight = letterHeight;
         if (blockScale != 1.0f) {
             GlyphLayout glyphLayout = new GlyphLayout();
             String item = letter + "";
             glyphLayout.setText(font, item);
-            tempLetterWidth = glyphLayout.width;
-            tempLetterHeight = glyphLayout.height;
+            float tempLetterWidth = glyphLayout.width;
+            float tempLetterHeight = glyphLayout.height;
 
             font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - tempLetterWidth / 2, pos.y + pos.height / 2 + tempLetterHeight / 2);
         } else
             font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - letterWidth / 2, pos.y + pos.height / 2 + letterHeight / 2);
     }
 
-    public void roundedRect(ShapeRenderer shapeRenderer, float x, float y, float width, float height, float radius){
+    public void roundedRect(ShapeRenderer shapeRenderer, float x, float y, float width, float height, float radius) {
         // Central rectangle
         shapeRenderer.rect(x + radius, y + radius, width - 2 * radius, height - 2 * radius);
 

@@ -1,4 +1,5 @@
 package com.wordblocks.gdx;
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +33,9 @@ public class Utils {
 
         //Remove the first letter and add it to the solve order
         b.words.set(0, board.words.get(0).substring(1));
+        int j;
+        if (b == null || b.solveOrder == null || board == null || item == null || board.getCell(item.Row, item.Col)== null)
+            return null;
         b.solveOrder.add(board.getCell(item.Row, item.Col).id);
 
         //Make curCell point to location of letter we just processed

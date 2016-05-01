@@ -62,11 +62,6 @@ namespace LevelSolver
 					(t1, t2) => t1.Concat(new T[] { t2 }));
 		}
 
-		internal static List<List<string>> GetStringPermutations(object words, object count)
-		{
-			throw new NotImplementedException();
-		}
-
 		static public List<List<string>> GetStringPermutations(List<string> list, int length)
 		{
 			List<List<string>> perms = new List<List<string>>();

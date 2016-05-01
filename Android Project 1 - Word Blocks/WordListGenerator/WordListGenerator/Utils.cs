@@ -64,14 +64,17 @@ namespace WordListGenerator
 				case 9:
 					if (rand < 3) return 4;
 					if (rand < 3) return 5;
-					if (rand < 6) return 6;
+					if (rand < 6)
+						return 6;
 					return 9;
 				case 10:
 				case 11:
 					if (rand < 1) return 3;
 					if (rand < 2) return 4;
-					if (rand < 3) return 5;
-					if (rand < 6) return 6;
+					if (rand < 3)
+						return 5;
+					if (rand < 6)
+						return 6;
 					return 7;
 				default:
 					if (charsLeft > 11)
@@ -80,14 +83,14 @@ namespace WordListGenerator
 						//if (rand < 4) return RandomNumber(5, 10);
 						//if (rand < 6) return RandomNumber(6, 10);
 						//if (rand < 8) return RandomNumber(7, 10);
-						return RandomNumber(4, 10);
+						return RandomNumber(3, 10);
 					}
 					throw new Exception("Should not have gotten here!");
 
 			}
 		}
 		//Function to get random number
-		private static readonly Random random = new Random(0);
+		private static readonly Random random = new Random(2);
 		private static readonly object syncLock = new object();
 		public static int RandomNumber(int min, int max)
 		{

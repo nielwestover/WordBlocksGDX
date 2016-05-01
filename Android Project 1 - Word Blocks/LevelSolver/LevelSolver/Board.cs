@@ -270,7 +270,7 @@ namespace LevelSolver
 		{
 			for (int col = 0; col < dim; ++col)
 			{
-				for (int row = 0; row < dim - 1; ++row)
+				for (int row = 0; row < dim; ++row)
 				{
 					if (board[row, col] != null && solveOrder.Contains(board[row, col].id))
 						board[row, col] = null;

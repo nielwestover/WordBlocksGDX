@@ -3,8 +3,11 @@ package com.wordblocks.gdx;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import helpers.RowColPair;
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
 
 /**
  * Created by a2558 on 4/26/2016.
@@ -18,24 +21,30 @@ public class LevelSolver {
         ArrayList<Integer> solution = s.solveBoard(b);
         return solution;
     }
-
+    static int maxLoopCount = 0;
     private ArrayList<Integer> solveBoard(SolverBoard b)
     {
         ArrayList<String> shuffledWords = new ArrayList<String>(b.words);
-        while(true)
+        int count = 0;
+        while(count++ < 1000)
         {
             Collections.shuffle(shuffledWords);
 
-            ArrayList<Integer> curWordOrder = new ArrayList<Integer>();
             SolverBoard copy = b.copy();
             copy.words = new ArrayList<String>(shuffledWords);
             copy.curCell = null;
             ArrayList<Integer> solveOrder = solve(copy);
             if (solveOrder != null)
             {
+                Gdx.app.log("MyTag", "Loop count: " + count);
+                if (count > maxLoopCount)
+                    maxLoopCount = count;
+                Gdx.app.log("MyTag", "Max count---: " + maxLoopCount);
                 return solveOrder;
             }
         }
+        Gdx.app.log("MyTag", "NOT FOUND: Loop count: " + count);
+        return null;
     }
     public ArrayList<Integer> solve(SolverBoard b)
     {

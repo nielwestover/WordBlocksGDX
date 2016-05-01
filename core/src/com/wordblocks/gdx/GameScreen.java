@@ -122,6 +122,9 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
             wordBlocksController.init();
         }
 
+        if (wordBlocksController.game.giveHint.contains(screen.x, screen.y)) {
+            wordBlocksController.giveHint();
+        }
 
         return true;
     }

@@ -35,7 +35,7 @@ namespace LevelGenerator
 						Board b = generateBoard(level);
 						b.print();
 
-						//allBoards.Add(new Level() { board = b.ToList(), words = level.OrderBy(n => n).ToList() });
+						allBoards.Add(new Level() { board = b.ToList(), words = level.OrderBy(n => n).ToList() });
 					}
 					
 				}

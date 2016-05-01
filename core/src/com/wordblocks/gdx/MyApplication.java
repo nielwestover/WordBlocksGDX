@@ -16,43 +16,49 @@ import java.util.List;
  */
 public class MyApplication {
 
-    private static List<List<String>> wordLists = new ArrayList<List<String>>();
+    private static List<LevelPack> levelPacks = new ArrayList<LevelPack>();
     //private static List<Level> levels = new ArrayList<Level>();
 
     private static Level curLevel;
-    public static int curLevelIndex = 0;
+    public static int curPackIndex = 24;
+    public static int curLevelIndex = 4;
 
-    public static List<List<String>> levels() {
-        if (wordLists == null || wordLists.size() == 0) {
+    public static List<LevelPack> packs() {
+        if (levelPacks == null || levelPacks.size() == 0) {
            loadAllLevels();
-
         }
-        return wordLists;
+        return levelPacks;
     }
 
     public static Level getCurLevel() {
         if (curLevel == null) {
-            curLevel = generateLevel(levels().get(curLevelIndex), curLevelIndex);
+            curLevel = generateLevel(packs().get(curPackIndex).levels.get(curLevelIndex), curPackIndex * 100 + curLevelIndex);
         }
         return curLevel;
     }
 
     //returns success - true or false
     public static boolean setCurLevel(int level) {
-        if (level >= 0 && level < levels().size()) {
+        if (level >= 0 && level < packs().size()) {
             curLevelIndex = level;
-            curLevel = generateLevel(levels().get(level), curLevelIndex);
+            curLevel = generateLevel(packs().get(curPackIndex).levels.get(curLevelIndex), curPackIndex * 100 + curLevelIndex);
             return true;
         }
         return false;
     }
 
     public static boolean incrementCurLevel() {
+        if (curLevelIndex + 1 >= 20) {
+            if (curPackIndex+1 >= packs().size())
+                return false;
+            curPackIndex++;
+            return setCurLevel(0);
+        }
         return setCurLevel(curLevelIndex + 1);
     }
 
     public static void loadAllLevels() {
-           wordLists = new Json().fromJson(ArrayList.class, ArrayList.class, Gdx.files.internal("usedWordsSorted.json"));//gson.fromJson(br, new TypeToken<List<JsonLog>>(){}.getType());
+        levelPacks = new Json().fromJson(ArrayList.class, LevelPack.class, Gdx.files.internal("completePackList.json"));//gson.fromJson(br, new TypeToken<List<JsonLog>>(){}.getType());
         //levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("45_levels_3_game_ideas.json"));
     }
 
