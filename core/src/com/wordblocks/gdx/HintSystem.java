@@ -1,6 +1,7 @@
 package com.wordblocks.gdx;
 
 import java.util.ArrayList;
+import solver.LevelSolver;
 
 /**
  * Created by a2558 on 4/30/2016.
@@ -44,10 +45,10 @@ public class HintSystem {
         }
         //need to run the solver...
         else if (solveOrder == null && !unsolvable) {
-            Level curState = new Level();
+            datatypes.Level curState = new datatypes.Level();
             curState.words = game.remainingWords();
             curState.board = game.boardToList();
-            solveOrder = LevelSolver.Solve(curState);
+            solveOrder = solver.LevelSolver.Solve(curState);
             if (solveOrder == null)
                 unsolvable = true;
         }

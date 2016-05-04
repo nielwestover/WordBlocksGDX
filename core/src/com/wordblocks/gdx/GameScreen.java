@@ -5,6 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -12,6 +13,8 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.sun.glass.ui.Application;
+
+import particles.ParticleManager;
 
 /**
  * Created by a2558 on 3/21/2016.
@@ -55,6 +58,7 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
         wordBlocksRenderer = new WordBlocksRenderer(worldWidth, worldHeight, this);
         wordBlocksRenderer.setCamera(camera);
         wordBlocksController.update();//do initial update to set up board, so game is not null for the next call
+        ParticleManager.Inst().createEffect("snow.txt", new Vector2(0, worldHeight));
 
         //skin = new Skin(Gdx.files.internal("uiskin.json"));
         //stage = new Stage(viewport);
@@ -71,6 +75,7 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
         camera.update();
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl.glEnable(GL20.GL_BLEND);
 
         t = TimeUtils.millis();
         if (t >= nextGameTick) {

@@ -1,4 +1,6 @@
-package com.wordblocks.gdx;
+package datatypes;
+
+import com.wordblocks.gdx.LetterBlock;
 
 import java.util.List;
 

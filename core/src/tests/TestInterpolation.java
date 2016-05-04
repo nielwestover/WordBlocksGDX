@@ -1,4 +1,4 @@
-package com.wordblocks.gdx;
+package tests;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;

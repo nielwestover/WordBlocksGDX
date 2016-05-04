@@ -1,4 +1,6 @@
-package com.wordblocks.gdx;
+package datatypes;
+
+import com.wordblocks.gdx.LetterBlock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +63,7 @@ public class Board {
             for (int col = 0; col < dim; ++col) {
                 rowWord += board[row][col].c;
             }
-            if (rowWord.contains(item) || Utils.ReverseString(rowWord).contains(item))
+            if (rowWord.contains(item) || utils.Utils.ReverseString(rowWord).contains(item))
                 return true;
         }
         for (int col = 0; col < dim; ++col) {
@@ -69,7 +71,7 @@ public class Board {
             for (int row = 0; row < dim; ++row) {
                 colWord += board[row][col].c;
             }
-            if (colWord.contains(item) || Utils.ReverseString(colWord).contains(item))
+            if (colWord.contains(item) || utils.Utils.ReverseString(colWord).contains(item))
                 return true;
         }
         return false;

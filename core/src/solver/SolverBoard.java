@@ -1,8 +1,9 @@
-package com.wordblocks.gdx;
+package solver;
 
-import java.lang.reflect.Array;
+import com.wordblocks.gdx.LetterBlock;
+import datatypes.Level;
+
 import java.util.ArrayList;
-import java.util.List;
 
 import helpers.RowColPair;
 

@@ -3,13 +3,10 @@ package com.wordblocks.gdx;
 import com.badlogic.gdx.Screen;
 
 public class WordBlocksGDX extends com.badlogic.gdx.Game {
-    static final int worldWidth = 1200;
-    static final int worldHeight = 1600;
-
     @Override
     public void create() {
         setScreen(new GameScreen(this));
-        //setScreen(new TestInterpolation());
+        //setScreen(new tests.TestInterpolation());
     }
     @Override
     public void dispose() {

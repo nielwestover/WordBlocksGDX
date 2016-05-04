@@ -29,6 +29,7 @@ public class RowColPair {
     }
 
     public Boolean equals(RowColPair p) {
+
         return Row == p.Row && Col == p.Col;
     }
 };

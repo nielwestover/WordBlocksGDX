@@ -2,7 +2,6 @@ package com.wordblocks.gdx;
 
 import com.badlogic.gdx.math.Rectangle;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +16,7 @@ public class Game {
     Rectangle skipNext;
     Rectangle giveHint;
 
-    public Game(Level level) {
+    public Game(datatypes.Level level) {
         int dim = (int) Math.sqrt(level.board.size());
         grid = new Cell[dim][dim];
         initBoard();
@@ -34,7 +33,7 @@ public class Game {
         dims = new DrawDimensions();
     }
 
-    List<Answer> answers;
+    ArrayList<Answer> answers;
 
     private void initBoard(List<LetterBlock> board) {
         int index = 0;
@@ -128,15 +127,15 @@ public class Game {
 
     public class DrawDimensions {
         float screenWidth;
-        float scalar;
         float boxGap;
         float padding;
-        float boxRounding;
         float boxDim;
+        float topPadding;
         float inset;
     }
 
     public class Answer {
+        public Answer(){}
         boolean found = false;
         String word;
 

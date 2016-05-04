@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -11,8 +12,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 import helpers.MyShapeRenderer;
+import particles.ParticleManager;
 
 
 /**
@@ -42,11 +45,13 @@ public class WordBlocksRenderer {
         this.height = height;
 
         spriteBatch = new SpriteBatch();
-        FreeTypeFontGenerator generatorBlocks = new FreeTypeFontGenerator(Gdx.files.internal("fonts/lucon.ttf"));
-        //FreeTypeFontGenerator generatorText = new FreeTypeFontGenerator(Gdx.files.internal("fonts/AGENCYB.TTF"));
+
+//        FreeTypeFontGenerator generatorBlocks = new FreeTypeFontGenerator(Gdx.files.internal("fonts/lucon.ttf"));
+        FreeTypeFontGenerator generatorBlocks = new FreeTypeFontGenerator(Gdx.files.internal("fonts/calibrib.ttf"));
+
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        parameter.size = 128;
+        parameter.size = 115;
         fontBlocks = generatorBlocks.generateFont(parameter);
         fontBlocks.setColor(Color.BLACK);
 
@@ -115,7 +120,7 @@ public class WordBlocksRenderer {
                         game.grid[i][j].cellPos =
                                 new Rectangle(
                                         (int) (game.dims.padding + (game.dims.boxGap + game.dims.boxDim) * i),
-                                        height - (int) ((game.dims.boxGap + game.dims.boxDim) * (j + 1)),
+                                        height - game.dims.topPadding - (int) ((game.dims.boxGap + game.dims.boxDim) * (j + 1)),
                                         game.dims.boxDim,
                                         game.dims.boxDim);
                         game.grid[i][j].block.pos.set(game.grid[i][j].cellPos);
@@ -124,6 +129,9 @@ public class WordBlocksRenderer {
                 drawState = DrawStates.RENDER;
                 break;
             case RENDER:
+                //draw particles
+                drawParticles();
+
                 //Draw blocks
                 drawBlocks(game);
 
@@ -133,8 +141,16 @@ public class WordBlocksRenderer {
                 drawButtons();
 
                 drawFPSCounter();
+
                 break;
         }
+    }
+
+    private void drawParticles() {
+        spriteBatch.begin();
+        ParticleManager.Inst().update();
+        ParticleManager.Inst().render(spriteBatch);
+        spriteBatch.end();
     }
 
     private void drawFPSCounter() {
@@ -193,12 +209,10 @@ public class WordBlocksRenderer {
             fontCurWord.draw(spriteBatch, game.selectedWord, width / 2 - glyphLayout.width / 2, height - (width + 40));
         }
 
-        for (int i = 0; i < game.answers.size(); ++i) {
-            if (game.answers.get(i).found)
-                fontAnswers.setColor(Color.GRAY);
-            else
-                fontAnswers.setColor(Color.WHITE);
-            fontAnswers.draw(spriteBatch, game.answers.get(i).word, 6, height - (game.dims.screenWidth + 125 + 65 * i));
+        for (int i = 0; i < wbc.answerView.drawableAnswers.size(); ++i) {
+           fontAnswers.setColor(wbc.answerView.drawableAnswers.get(i).color);
+
+           fontAnswers.draw(spriteBatch, wbc.answerView.drawableAnswers.get(i).answer.word, 6, height - (game.dims.screenWidth + 125 + 65 * i));
         }
         spriteBatch.end();
     }
@@ -211,6 +225,8 @@ public class WordBlocksRenderer {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+
         for (int i = 0; i < game.grid.length; ++i) {
             for (int j = 0; j < game.grid[i].length; ++j) {
                 if (game.grid[i][j].block == null)
@@ -220,6 +236,8 @@ public class WordBlocksRenderer {
             }
         }
         shapeRenderer.end();
+
+        Gdx.gl.glDisable(GL20.GL_BLEND);
 
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();

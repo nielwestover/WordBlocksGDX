@@ -1,19 +1,18 @@
-package com.wordblocks.gdx;
+package solver;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 
 import helpers.RowColPair;
-import com.badlogic.gdx.Application;
+
 import com.badlogic.gdx.Gdx;
+import datatypes.Level;
 
 /**
  * Created by a2558 on 4/26/2016.
  */
 public class LevelSolver {
-    static ArrayList<Integer> Solve(Level level)
+    public static ArrayList<Integer> Solve(Level level)
     {
         LevelSolver s = new LevelSolver();
         SolverBoard b = new SolverBoard(level);
@@ -80,7 +79,7 @@ public class LevelSolver {
         //startLocations = b.removeBadLocations(startLocations);
 
         for (RowColPair item: startLocations) {
-            SolverBoard newBoard = Utils.GetNewBoardState(b, item);
+            SolverBoard newBoard = utils.Utils.GetNewBoardState(b, item);
             ArrayList<Integer> solution = solve(newBoard);
             if (solution != null)
                 return solution;

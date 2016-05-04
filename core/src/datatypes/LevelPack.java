@@ -1,4 +1,4 @@
-package com.wordblocks.gdx;
+package datatypes;
 
 import java.util.ArrayList;
 

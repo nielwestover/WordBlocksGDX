@@ -1,15 +1,21 @@
 package com.wordblocks.gdx;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Pixmap;
+
+import particles.ParticleManager;
 
 public class Block extends DrawableObject {
     char letter;
@@ -22,7 +28,8 @@ public class Block extends DrawableObject {
     Color blockColor = Color.WHITE.cpy();
     Color charColor = Color.BLACK.cpy();
     float blockScale;
-    Vector2 center;
+    Vector2 center = new Vector2();
+    boolean showParticle = false;
 
     private boolean isHint;
 
@@ -52,6 +59,7 @@ public class Block extends DrawableObject {
         NORMALTOSELECTED,
         NORMALTOSELECTED_ANIM,
         SELECTED,
+        DISSOLVING,
         FALLING,
         SELECTEDTONORMAL,
         SELECTEDTONORMAL_ANIM,
@@ -97,9 +105,13 @@ public class Block extends DrawableObject {
     int hintInterpSteps = 5;
     boolean hintAnimIncreasing = true;
     int hintAnimRotateCount = 0;
+    float dissolveInterpSteps = 40;
+    float dissolveSteps = 0;
 
     @Override
     void update() {
+        center = pos.getCenter(center);
+
         switch (curState) {
             case ANIM_START:
                 curState = AnimState.NORMAL;
@@ -124,7 +136,7 @@ public class Block extends DrawableObject {
                 hintAnimIncreasing = true;
                 hintAnimRotateCount = 0;
             case NORMALTOHINT_ANIM:
-                if (hintAnimRotateCount < 3) {
+                if (hintAnimRotateCount < 4) {
                     if (hintAnimIncreasing) {
                         if (interpSteps++ >= hintInterpSteps) {
                             hintAnimIncreasing = false;
@@ -137,8 +149,8 @@ public class Block extends DrawableObject {
                     }
                     float angleVal = Interpolation.sineOut.apply(interpSteps / (float) hintInterpSteps);
                     angle = 350 + angleVal * 20;
-                    blockColor.set(1.0f - hintLoop.val, 1.0f - hintLoop.val, 1.0f - hintLoop.val, 1);
-                    charColor.set(hintLoop.val, hintLoop.val, hintLoop.val, 1);
+                    //blockColor.set(1.0f - hintLoop.val, 1.0f - hintLoop.val, 1.0f - hintLoop.val, 1);
+                    //charColor.set(hintLoop.val, hintLoop.val, hintLoop.val, 1);
                 } else {
                     angle = 0;
                     blockScale = 1.0f;
@@ -150,7 +162,7 @@ public class Block extends DrawableObject {
                 curState = AnimState.NORMALTOSELECTED_ANIM;
             case NORMALTOSELECTED_ANIM:
                 if (interpSteps++ <= maxInterpSteps) {
-                    float val = Interpolation.exp10Out.apply(interpSteps / maxInterpSteps);
+                    float val = Interpolation.exp5Out.apply(interpSteps / maxInterpSteps);
                     blockColor.set(1.0f - val, 1.0f - val, 1.0f - val, 1);
                     charColor.set(val, val, val, 1);
                     blockScale = 1.0f - val * .12f;
@@ -166,6 +178,14 @@ public class Block extends DrawableObject {
                 blockColor = Color.BLACK.cpy();
                 if (!selected)
                     curState = AnimState.SELECTEDTONORMAL;
+                break;
+            case DISSOLVING:
+                if (dissolveSteps++ <= dissolveInterpSteps) {
+                    float val = 1.f - Interpolation.exp5Out.apply(dissolveSteps / 60.f);
+                    blockColor.a = val;
+                    charColor.a = val;
+                } else
+                    curState = AnimState.FOUND;
                 break;
             case FALLING:
                 if (pos.y > targetPos.y) {
@@ -195,20 +215,13 @@ public class Block extends DrawableObject {
                     blockScale = 1f;
                 }
                 break;
-            case TOFOUND:
-                break;
-            case FOUND:
-                break;
         }
     }
-
-    Vector2 tmpCenter = new Vector2();
 
     @Override
     void renderShapes(ShapeRenderer shapeRenderer) {
         shapeRenderer.setColor(blockColor);
         shapeRenderer.identity();
-        tmpCenter = pos.getCenter(tmpCenter);
 
         if (blockScale != 1.0f) {
 
@@ -219,10 +232,10 @@ public class Block extends DrawableObject {
 
             outline.width = outlineWidth;
             outline.height = outlineWidth;
-            outline.setCenter(tmpCenter);
+            outline.setCenter(center);
             r.width = width;
             r.height = width;
-            r.setCenter(tmpCenter);
+            r.setCenter(center);
             shapeRenderer.setColor(charColor);
             //shapeRenderer.rect(outline.x, outline.y, outline.width, outline.height);
             roundedRect(shapeRenderer, outline.x, outline.y, outline.width, outline.height, 10);
@@ -230,12 +243,14 @@ public class Block extends DrawableObject {
             //shapeRenderer.rect(r.x, r.y, r.width, r.height);
             roundedRect(shapeRenderer, r.x, r.y, r.width, r.height, pos.width / 35.0f);
         } else {
-            //shapeRenderer.rect(pos.x, pos.y, pos.width, pos.height);
+
             if (angle == 0)
                 roundedRect(shapeRenderer, pos.x, pos.y, pos.width, pos.height, pos.width / 35.0f);
-            else
-                shapeRenderer.rect(pos.x, pos.y, pos.width / 2, pos.height / 2, pos.width, pos.height, 1.f, 1.f, angle);
+            else {
+                shapeRenderer.rect(pos.x, pos.y, pos.width/2, pos.height/2, pos.width, pos.height, 1.f, 1.f, angle);
+            }
         }
+        //Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
     @Override
@@ -271,4 +286,5 @@ public class Block extends DrawableObject {
         shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f);
         shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f);
     }
+
 }

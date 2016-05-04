@@ -1,9 +1,6 @@
 package com.wordblocks.gdx;
 
-import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.math.Rectangle;
-
-import java.util.ArrayList;
 
 import helpers.RowColPair;
 
@@ -26,6 +23,7 @@ public class WordBlocksController {
         FINGER_DOWN,
         MOVING,
         FINGER_UP,
+        ANIMATE_DISSOLVE,
         ANIMATE_DROP_BLOCKS,
         CHECK_LEVEL_FINISHED,
         GAME_OVER
@@ -50,6 +48,7 @@ public class WordBlocksController {
         switch (gameState) {
             case INIT:
                 game = new Game(MyApplication.getCurLevel());
+                answerView = new Answers.AnswerListView(game.answers);
                 game.refresh = new Rectangle(width - 150, 0, 150, 150);
                 game.skipNext = new Rectangle(0, 0, 150, 150);
                 game.giveHint = new Rectangle(width / 2 - 75, 0, 150, 150);
@@ -85,16 +84,23 @@ public class WordBlocksController {
                 break;
             case FINGER_UP:
                 if (game.getSelectedWord(game.selectedWord) != null) {
-                    gameState = GameStates.ANIMATE_DROP_BLOCKS;
+                    gameState = GameStates.ANIMATE_DISSOLVE;
+                    setBlocksToDissolve();
+                } else {
+                    game.deselectAll();
+                    gameState = GameStates.WAIT_FOR_PRESS;
+                }
+                break;
+            case ANIMATE_DISSOLVE:
+                if (!blocksStillDissolving()) {
+                    gameState = GameStates.GAME_OVER.ANIMATE_DROP_BLOCKS;
                     game.removeWordFound();
+                    game.deselectAll();
                     hintSystem = null;
                     removeHints();
                     game.dropBlocks();
                     setBlocksToFall();
-                } else {
-                    gameState = GameStates.WAIT_FOR_PRESS;
                 }
-                game.deselectAll();
                 break;
             case ANIMATE_DROP_BLOCKS:
                 //runs until finished
@@ -113,8 +119,10 @@ public class WordBlocksController {
                 break;
         }
 
+        answerView.update();
         updateBlocks();
     }
+    Answers.AnswerListView answerView;
 
     private void setBlocksToFall() {
         for (int i = 0; i < game.grid.length; ++i) {
@@ -125,6 +133,12 @@ public class WordBlocksController {
                 game.grid[i][j].block.targetPos = game.grid[i][j].cellPos;
             }
         }
+    }
+
+    private void setBlocksToDissolve() {
+        for (RowColPair rc : game.selectedChain)
+            game.grid[rc.Row][rc.Col].block.setCurState(Block.AnimState.DISSOLVING);
+
     }
 
     private void updateBlocks() {
@@ -149,17 +163,26 @@ public class WordBlocksController {
         return false;
     }
 
+    private boolean blocksStillDissolving() {
+        for (int i = 0; i < game.grid.length; ++i) {
+            for (int j = 0; j < game.grid[i].length; ++j) {
+                if (game.grid[i][j].block == null)
+                    continue;
+                if (game.grid[i][j].block.getCurState() == Block.AnimState.DISSOLVING)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public void initGameDimensions() {
         game.dims.screenWidth = width;
-        game.dims.scalar = 1;//game.dims.screenWidth / 600;
 
-
-        game.dims.boxGap = (25 - 2 * game.grid.length) * game.dims.scalar;
-        game.dims.padding = 60 * game.dims.scalar;
-        game.dims.boxRounding = 10 * game.dims.scalar;
+        game.dims.boxGap = (25 - 2 * game.grid.length);
+        game.dims.padding = 40;
         game.dims.boxDim = (game.dims.screenWidth - (game.dims.padding * 2 + game.dims.boxGap * (game.grid.length - 1))) / (game.grid.length * 1.0f);
         game.dims.inset = .13f * game.dims.boxDim;
-
+        game.dims.topPadding = 100;
     }
 
     private void doBlockLogic() {

@@ -1,11 +1,9 @@
-package com.wordblocks.gdx;
-import java.io.Console;
-import java.util.ArrayList;
-import java.util.Collections;
+package utils;
+
 import java.util.List;
-import java.util.Random;
 
 import helpers.RowColPair;
+import solver.SolverBoard;
 
 /**
  * Created by a2558 on 4/20/2016.

@@ -1,0 +1,231 @@
+Untitled
+- Delay -
+active: false
+- Duration - 
+lowMin: 1000.0
+lowMax: 1000.0
+- Count - 
+min: 0
+max: 10000
+- Emission - 
+lowMin: 0.0
+lowMax: 0.0
+highMin: 6.0
+highMax: 6.0
+relative: false
+scalingCount: 1
+scaling0: 1.0
+timelineCount: 1
+timeline0: 0.0
+- Life - 
+lowMin: 0.0
+lowMax: 0.0
+highMin: 25000.0
+highMax: 25000.0
+relative: false
+scalingCount: 3
+scaling0: 1.0
+scaling1: 1.0
+scaling2: 1.0
+timelineCount: 3
+timeline0: 0.0
+timeline1: 0.66
+timeline2: 1.0
+- Life Offset - 
+active: false
+- X Offset - 
+active: false
+- Y Offset - 
+active: false
+- Spawn Shape - 
+shape: line
+- Spawn Width - 
+lowMin: 0.0
+lowMax: 0.0
+highMin: 1200.0
+highMax: 1200.0
+relative: false
+scalingCount: 1
+scaling0: 1.0
+timelineCount: 1
+timeline0: 0.0
+- Spawn Height - 
+lowMin: 0.0
+lowMax: 0.0
+highMin: 0.0
+highMax: 0.0
+relative: false
+scalingCount: 1
+scaling0: 1.0
+timelineCount: 1
+timeline0: 0.0
+- Scale - 
+lowMin: 10.0
+lowMax: 10.0
+highMin: 30.0
+highMax: 60.0
+relative: false
+scalingCount: 5
+scaling0: 0.49019608
+scaling1: 0.60784316
+scaling2: 0.6666667
+scaling3: 0.64705884
+scaling4: 0.627451
+timelineCount: 5
+timeline0: 0.0
+timeline1: 0.2739726
+timeline2: 0.60273975
+timeline3: 0.8287671
+timeline4: 1.0
+- Velocity - 
+active: true
+lowMin: 80.0
+lowMax: 120.0
+highMin: 230.0
+highMax: 270.0
+relative: false
+scalingCount: 14
+scaling0: 0.09803922
+scaling1: 0.43137255
+scaling2: 0.33333334
+scaling3: 0.3137255
+scaling4: 0.49019608
+scaling5: 0.43137255
+scaling6: 0.1764706
+scaling7: 0.09803922
+scaling8: 0.43137255
+scaling9: 0.13725491
+scaling10: 0.47058824
+scaling11: 0.23529412
+scaling12: 0.64705884
+scaling13: 0.1764706
+timelineCount: 14
+timeline0: 0.0
+timeline1: 0.19178082
+timeline2: 0.25342464
+timeline3: 0.34246576
+timeline4: 0.34931508
+timeline5: 0.42465752
+timeline6: 0.46575344
+timeline7: 0.53424656
+timeline8: 0.6164383
+timeline9: 0.6712329
+timeline10: 0.74657536
+timeline11: 0.79452056
+timeline12: 0.84931505
+timeline13: 0.89041096
+- Angle - 
+active: true
+lowMin: 1.0
+lowMax: 1.0
+highMin: 250.0
+highMax: 290.0
+relative: false
+scalingCount: 3
+scaling0: 1.0
+scaling1: 1.0
+scaling2: 1.0
+timelineCount: 3
+timeline0: 0.0
+timeline1: 0.5
+timeline2: 0.999
+- Rotation - 
+active: false
+- Wind - 
+active: true
+lowMin: 0.0
+lowMax: 0.0
+highMin: -20.0
+highMax: 20.0
+relative: false
+scalingCount: 1
+scaling0: 1.0
+timelineCount: 1
+timeline0: 0.0
+- Gravity - 
+active: true
+lowMin: 0.0
+lowMax: 0.0
+highMin: -50.0
+highMax: -50.0
+relative: false
+scalingCount: 18
+scaling0: 1.0
+scaling1: 0.078431375
+scaling2: 0.78431374
+scaling3: 0.47058824
+scaling4: 0.98039216
+scaling5: 0.47058824
+scaling6: 0.9411765
+scaling7: 0.9019608
+scaling8: 0.23529412
+scaling9: 0.7647059
+scaling10: 0.13725491
+scaling11: 0.78431374
+scaling12: 0.37254903
+scaling13: 0.33333334
+scaling14: 0.88235295
+scaling15: 0.43137255
+scaling16: 0.64705884
+scaling17: 0.039215688
+timelineCount: 18
+timeline0: 0.0
+timeline1: 0.020547945
+timeline2: 0.09589041
+timeline3: 0.1849315
+timeline4: 0.24657534
+timeline5: 0.29452056
+timeline6: 0.30136988
+timeline7: 0.34931508
+timeline8: 0.37671232
+timeline9: 0.43835616
+timeline10: 0.47945204
+timeline11: 0.5410959
+timeline12: 0.5479452
+timeline13: 0.6369863
+timeline14: 0.69863015
+timeline15: 0.7191781
+timeline16: 0.79452056
+timeline17: 0.8356164
+- Tint - 
+colorsCount: 6
+colors0: 0.31764707
+colors1: 0.31764707
+colors2: 0.31764707
+colors3: 1.0
+colors4: 1.0
+colors5: 1.0
+timelineCount: 2
+timeline0: 0.0
+timeline1: 1.0
+- Transparency - 
+lowMin: 0.0
+lowMax: 0.0
+highMin: 1.0
+highMax: 1.0
+relative: false
+scalingCount: 7
+scaling0: 0.84210527
+scaling1: 1.0
+scaling2: 0.57894737
+scaling3: 0.9122807
+scaling4: 0.4385965
+scaling5: 0.50877196
+scaling6: 0.5263158
+timelineCount: 7
+timeline0: 0.0
+timeline1: 0.2
+timeline2: 0.34931508
+timeline3: 0.55479455
+timeline4: 0.8082192
+timeline5: 0.8835617
+timeline6: 1.0
+- Options - 
+attached: false
+continuous: true
+aligned: false
+additive: false
+behind: false
+premultipliedAlpha: false
+- Image Path -
+/D:/Git/WordBlocksGDX/android/assets/particle.png
