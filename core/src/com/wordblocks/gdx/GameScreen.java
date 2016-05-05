@@ -20,8 +20,8 @@ import particles.ParticleManager;
  * Created by a2558 on 3/21/2016.
  */
 public class GameScreen extends WordBlocksInputProcessor implements Screen {
-    final int worldWidth = 1200;
-    final int worldHeight = 2133;
+    public static final int worldWidth = 1200;
+    public static final int worldHeight = 2133;
     long t;
     long nextGameTick = 0;
     final int FRAMES_PER_SECOND = 60;

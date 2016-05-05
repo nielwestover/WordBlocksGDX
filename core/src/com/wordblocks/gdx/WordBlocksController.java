@@ -1,5 +1,10 @@
 package com.wordblocks.gdx;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Rectangle;
 
 import helpers.RowColPair;
@@ -15,6 +20,10 @@ public class WordBlocksController {
     public float Y;
     private RowColPair selectedBlock;
     private RowColPair previousSelectedBlock;
+    public BitmapFont fontBlocks;
+    public BitmapFont fontAnswers;
+    public BitmapFont fontCurWord;
+
     Game game;
 
     public enum GameStates {
@@ -32,11 +41,22 @@ public class WordBlocksController {
     public float width, height;
     GameScreen Overlord;
 
+
     public WordBlocksController(float width, float height, GameScreen overlord) {
         Overlord = overlord;
         this.width = width;
         this.height = height;
     }
+
+    public float origBlockFontScale;
+    float getBlockFontScale() {
+        //This is smallest the block font will be
+        float origScale = 110.0f / 128.0f;//Based on 7x7, 160 pixel blocks
+        //So scale it based on how much larger the current boxDim is than the original 160
+        float scaleFactor = game.dims.boxDim / 160.0f;
+        return origScale * scaleFactor;
+    }
+
 
     public GameStates gameState = GameStates.INIT;
 
@@ -44,18 +64,47 @@ public class WordBlocksController {
         gameState = GameStates.INIT;
     }
 
+    private void initFonts(){
+        //FreeTypeFontGenerator generatorAnswers = new FreeTypeFontGenerator(Gdx.files.internal("fonts/lucon.ttf"));
+        FreeTypeFontGenerator generatorBlocks = new FreeTypeFontGenerator(Gdx.files.internal("fonts/calibrib.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        parameter.size = 115;
+        fontBlocks = generatorBlocks.generateFont(parameter);
+        fontBlocks.setColor(Color.BLACK);
+
+        fontCurWord = generatorBlocks.generateFont(parameter);
+        fontCurWord.setColor(Color.WHITE);
+
+        fontAnswers = generatorBlocks.generateFont(parameter);
+
+        fontBlocks.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        fontCurWord.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        fontAnswers.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        float blockFontSize = getBlockFontScale();
+        origBlockFontScale = blockFontSize;
+        fontBlocks.getData().setScale(blockFontSize, blockFontSize);
+        fontCurWord.getData().setScale(100.0f / 128.0f);
+        fontAnswers.getData().setScale(65.0f / 128.0f);
+
+        generatorBlocks.dispose(); // don't forget to dispose to avoid memory leaks!
+        //generatorAnswers.dispose(); // don't forget to dispose to avoid memory leaks!
+    }
+
     public void update() {
         switch (gameState) {
             case INIT:
                 game = new Game(MyApplication.getCurLevel());
-                answerView = new Answers.AnswerListView(game.answers);
+                initGameDimensions();
+
+                initFonts();
+                answerView = new Answers.AnswerListView(game.answers, fontAnswers);
                 game.refresh = new Rectangle(width - 150, 0, 150, 150);
                 game.skipNext = new Rectangle(0, 0, 150, 150);
                 game.giveHint = new Rectangle(width / 2 - 75, 0, 150, 150);
                 hintSystem = null;
                 Block.hintLoop.reset();
 
-                initGameDimensions();
 
                 //always reinitialize the renderer when starting over
                 Overlord.wordBlocksRenderer.init();

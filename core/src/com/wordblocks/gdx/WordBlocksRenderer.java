@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
+import Answers.DrawableAnswer;
 import helpers.MyShapeRenderer;
 import particles.ParticleManager;
 
@@ -26,9 +27,6 @@ public class WordBlocksRenderer {
     private float height;
 
 
-    private BitmapFont fontBlocks;
-    private BitmapFont fontAnswers;
-    private BitmapFont fontCurWord;
     Camera camera;
     MyShapeRenderer shapeRenderer = new MyShapeRenderer();
     FPSLogger logger;
@@ -46,25 +44,6 @@ public class WordBlocksRenderer {
 
         spriteBatch = new SpriteBatch();
 
-//        FreeTypeFontGenerator generatorBlocks = new FreeTypeFontGenerator(Gdx.files.internal("fonts/lucon.ttf"));
-        FreeTypeFontGenerator generatorBlocks = new FreeTypeFontGenerator(Gdx.files.internal("fonts/calibrib.ttf"));
-
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-
-        parameter.size = 115;
-        fontBlocks = generatorBlocks.generateFont(parameter);
-        fontBlocks.setColor(Color.BLACK);
-
-        fontAnswers = generatorBlocks.generateFont(parameter);
-
-        fontCurWord = generatorBlocks.generateFont(parameter);
-        fontCurWord.setColor(Color.WHITE);
-
-        fontBlocks.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        fontCurWord.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        fontAnswers.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        generatorBlocks.dispose(); // don't forget to dispose to avoid memory leaks!
-        //generatorText.dispose(); // don't forget to dispose to avoid memory leaks!
         drawState = drawState.INIT;
     }
 
@@ -80,18 +59,10 @@ public class WordBlocksRenderer {
         drawState = DrawStates.INIT;
     }
 
-    float getBlockFontScale() {
-        //This is smallest the block font will be
-        float origScale = 110.0f / 128.0f;//Based on 7x7, 160 pixel blocks
-        //So scale it based on how much larger the current boxDim is than the original 160
-        float scaleFactor = game.dims.boxDim / 160.0f;
-        return origScale * scaleFactor;
-    }
+
 
     Game game;
     WordBlocksController wbc;
-    float origBlockFontScale;
-
 
     public void draw(WordBlocksController wbc) {
         this.wbc = wbc;
@@ -100,12 +71,6 @@ public class WordBlocksRenderer {
             return;
         switch (drawState) {
             case INIT:
-                float blockFontSize = getBlockFontScale();
-                origBlockFontScale = blockFontSize;
-                fontBlocks.getData().setScale(blockFontSize, blockFontSize);
-                fontCurWord.getData().setScale(100.0f / 128.0f);
-                fontAnswers.getData().setScale(65.0f / 128.0f);
-
                 for (int i = 0; i < game.grid.length; ++i) {
                     for (int j = 0; j < game.grid[i].length; ++j) {
                         if (game.grid[i][j].block == null)
@@ -113,7 +78,7 @@ public class WordBlocksRenderer {
 
                         GlyphLayout glyphLayout = new GlyphLayout();
                         String item = game.grid[i][j].block.letter + "";
-                        glyphLayout.setText(fontBlocks, item);
+                        glyphLayout.setText(wbc.fontBlocks, item);
                         game.grid[i][j].block.letterWidth = glyphLayout.width;
                         game.grid[i][j].block.letterHeight = glyphLayout.height;
 
@@ -154,12 +119,13 @@ public class WordBlocksRenderer {
     }
 
     private void drawFPSCounter() {
+        wbc.fontAnswers.getData().setScale(65.0f / 128.0f);
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
         float x = width - 300;
         float y = camera.viewportHeight - 15;
         int fps = Gdx.graphics.getFramesPerSecond();
-        BitmapFont fpsFont = fontAnswers;
+        BitmapFont fpsFont = wbc.fontAnswers;
         if (fps >= 45) {
             // 45 or more FPS show up in green
             fpsFont.setColor(0, 1, 0, 1);
@@ -191,8 +157,9 @@ public class WordBlocksRenderer {
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
 
-        fontAnswers.setColor(Color.WHITE);
-        fontAnswers.draw(spriteBatch, (MyApplication.curPackIndex + 1) + " : " + (MyApplication.curLevelIndex + 1) + "", 160.0f, 50.0f);
+        wbc.fontAnswers.getData().setScale(65.0f / 128.0f);
+        wbc.fontAnswers.setColor(Color.WHITE);
+        wbc.fontAnswers.draw(spriteBatch, (MyApplication.curPackIndex + 1) + " : " + (MyApplication.curLevelIndex + 1) + "", 160.0f, 50.0f);
 
         spriteBatch.end();
     }
@@ -204,16 +171,15 @@ public class WordBlocksRenderer {
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
 
+        //DRAW SELECTED WORD
         if (game.selectedWord.length() > 0) {
-            glyphLayout.setText(fontCurWord, game.selectedWord);
-            fontCurWord.draw(spriteBatch, game.selectedWord, width / 2 - glyphLayout.width / 2, height - (width + 40));
+            glyphLayout.setText(wbc.fontCurWord, game.selectedWord);
+            wbc.fontCurWord.draw(spriteBatch, game.selectedWord, width / 2 - glyphLayout.width / 2, height - (width + 40));
         }
 
-        for (int i = 0; i < wbc.answerView.drawableAnswers.size(); ++i) {
-           fontAnswers.setColor(wbc.answerView.drawableAnswers.get(i).color);
+        //DRAW answers
+        wbc.answerView.render(spriteBatch, wbc.fontAnswers);
 
-           fontAnswers.draw(spriteBatch, wbc.answerView.drawableAnswers.get(i).answer.word, 6, height - (game.dims.screenWidth + 125 + 65 * i));
-        }
         spriteBatch.end();
     }
 
@@ -231,8 +197,14 @@ public class WordBlocksRenderer {
             for (int j = 0; j < game.grid[i].length; ++j) {
                 if (game.grid[i][j].block == null)
                     continue;
-                fontBlocks.getData().setScale(origBlockFontScale);
+                wbc.fontBlocks.getData().setScale(wbc.origBlockFontScale);
                 game.grid[i][j].block.renderShapes(shapeRenderer);
+
+                //UNCOMMENT TO DISPLAY YELLOW ANSWER BOX!
+//                shapeRenderer.setColor(1, 1, 0, 1);
+//                shapeRenderer.identity();
+//                shapeRenderer.rect(wbc.answerView.view.x, wbc.answerView.view.y, wbc.answerView.view.width, wbc.answerView.view.height);
+
             }
         }
         shapeRenderer.end();
@@ -245,8 +217,8 @@ public class WordBlocksRenderer {
             for (int j = 0; j < game.grid[i].length; ++j) {
                 if (game.grid[i][j].block == null)
                     continue;
-                fontBlocks.getData().setScale(origBlockFontScale);
-                game.grid[i][j].block.renderSprites(spriteBatch, fontBlocks);
+                wbc.fontBlocks.getData().setScale(wbc.origBlockFontScale);
+                game.grid[i][j].block.renderSprites(spriteBatch, wbc.fontBlocks);
             }
         }
         spriteBatch.end();

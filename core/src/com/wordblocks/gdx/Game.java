@@ -136,8 +136,8 @@ public class Game {
 
     public class Answer {
         public Answer(){}
-        boolean found = false;
-        String word;
+        public boolean found = false;
+        public String word;
 
         public Answer(String word) {
             this.word = word;

@@ -16,8 +16,8 @@ public class MyApplication {
     //private static List<Level> levels = new ArrayList<Level>();
 
     private static datatypes.Level curLevel;
-    public static int curPackIndex = 24;
-    public static int curLevelIndex = 19;
+    public static int curPackIndex = 0;////24;
+    public static int curLevelIndex = 0;//19;
 
     public static List<datatypes.LevelPack> packs() {
         if (levelPacks == null || levelPacks.size() == 0) {
@@ -35,7 +35,7 @@ public class MyApplication {
 
     //returns success - true or false
     public static boolean setCurLevel(int level) {
-        if (level >= 0 && level < packs().size()) {
+        if (level >= 0 && level < packs().get(curPackIndex).levels.size()) {
             curLevelIndex = level;
             curLevel = generateLevel(packs().get(curPackIndex).levels.get(curLevelIndex), curPackIndex * 100 + curLevelIndex);
             return true;
@@ -54,8 +54,8 @@ public class MyApplication {
     }
 
     public static void loadAllLevels() {
-        levelPacks = new Json().fromJson(ArrayList.class, datatypes.LevelPack.class, Gdx.files.internal("completePackList.json"));//gson.fromJson(br, new TypeToken<List<JsonLog>>(){}.getType());
-        //levels = new Json().fromJson(ArrayList.class, Level.class, Gdx.files.internal("45_levels_3_game_ideas.json"));
+        //levelPacks = new Json().fromJson(ArrayList.class, datatypes.LevelPack.class, Gdx.files.internal("completePackList.json"));//gson.fromJson(br, new TypeToken<List<JsonLog>>(){}.getType());
+        levelPacks = new Json().fromJson(ArrayList.class, datatypes.LevelPack.class, Gdx.files.internal("11Levels.json"));//gson.fromJson(br, new TypeToken<List<JsonLog>>(){}.getType());
     }
 
     static datatypes.Level generateLevel(List<String> level, int seed) {
