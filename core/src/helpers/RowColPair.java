@@ -1,35 +1,28 @@
 package helpers;
 
-/**
- * Created by a2558 on 3/8/2016.
- */
-
 public class RowColPair {
+    public int Col;
+    public int Row;
+
     public RowColPair(int first, int second) {
         this.Row = first;
         this.Col = second;
     }
 
-    public int Row;
-    public int Col;
-
-
     public void setRow(int val) {
-        Row = val;
+        this.Row = val;
     }
-
 
     public void setCol(int val) {
-        Col = val;
+        this.Col = val;
     }
 
-    @Override
     public String toString() {
-        return Row + ", " + Col;
+        return this.Row + ", " + this.Col;
     }
 
     public Boolean equals(RowColPair p) {
-
-        return Row == p.Row && Col == p.Col;
+        boolean z = this.Row == p.Row && this.Col == p.Col;
+        return Boolean.valueOf(z);
     }
-};
+}

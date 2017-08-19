@@ -4,10 +4,9 @@ buildscript {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.2.2'
     }
 }
-
 allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
@@ -28,7 +27,6 @@ allprojects {
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
     }
 }
-
 project(":desktop") {
     apply plugin: "java"
 
@@ -42,7 +40,6 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
     }
 }
-
 project(":android") {
     apply plugin: "android"
 
@@ -70,7 +67,6 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64"
     }
 }
-
 project(":core") {
     apply plugin: "java"
 
@@ -81,7 +77,8 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
     }
 }
-
 tasks.eclipse.doLast {
     delete ".project"
+}
+dependencies {
 }

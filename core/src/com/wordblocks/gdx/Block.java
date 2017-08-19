@@ -1,58 +1,318 @@
+/*
+ * Decompiled with CFR 0_110.
+ * 
+ * Could not load the following classes:
+ *  java.lang.CharSequence
+ *  java.lang.Class
+ *  java.lang.Enum
+ *  java.lang.Math
+ *  java.lang.NoSuchFieldError
+ *  java.lang.Object
+ *  java.lang.String
+ */
 package com.wordblocks.gdx;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.ParticleEffect;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Pixmap;
-
+import com.wordblocks.gdx.BlockAnimation;
+import com.wordblocks.gdx.DrawableObject;
+import com.wordblocks.gdx.Game;
+import com.wordblocks.gdx.HintLoop;
 import particles.ParticleManager;
 
-public class Block extends DrawableObject {
-    char letter;
-    int hintIndex;
-    int id;
-    float letterWidth;
-    float letterHeight;
-    private boolean selected;
-    private boolean found;
+public class Block
+extends DrawableObject {
+    static HintLoop hintLoop;
+    Color alpha = new Color();
+    BlockAnimation blockAnimation;
     Color blockColor = Color.WHITE.cpy();
-    Color charColor = Color.BLACK.cpy();
     float blockScale;
     Vector2 center = new Vector2();
-    boolean showParticle = false;
-
+    Color charColor = Color.BLACK.cpy();
+    private AnimState curState;
+    float dissolveInterpSteps = 15.0f;
+    float dissolveSteps = 0.0f;
+    private boolean found;
+    Game game;
+    boolean hintAnimIncreasing = true;
+    int hintAnimRotateCount = 0;
+    int hintIndex;
+    int hintInterpSteps = 5;
+    int id;
+    public int interpSteps = 0;
+    private boolean isFirstHint = false;
     private boolean isHint;
+    char letter;
+    float letterHeight;
+    float letterWidth;
+    float maxInterpSteps = 20.0f;
+    private boolean selected;
+    float targetAlphaFill = 1.0f;
+    int wordPosition;
 
-    public Block() {
-        curState = AnimState.ANIM_START;
-        blockScale = 1;
+    public Block(int n, Game game) {
+        this.game = game;
+        this.id = n;
+        this.curState = AnimState.ANIM_START;
+        this.blockScale = 1.0f;
+        this.blockAnimation = new BlockAnimation((Block)this, game.blockAnimType, game.grid.length);
+    }
+
+    public AnimState getCurState() {
+        return this.curState;
     }
 
     public boolean getIsHint() {
-        return isHint;
+        return this.isHint;
     }
 
-    private boolean isFirstHint = false;
+    boolean getSelected() {
+        return this.selected;
+    }
 
-    public void setIsHint(boolean isHint) {
-        this.isHint = isHint;
-        if (curState == AnimState.NORMAL) {
-            curState = AnimState.NORMALTOHINT;
+    boolean isTouched(float f, float f2, float f3) {
+        if (f3 + this.pos.x < f && this.pos.x + this.pos.width - f3 > f && f3 + this.pos.y < f2 && this.pos.y + this.pos.height - f3 > f2) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    void renderShapes(ShapeRenderer shapeRenderer) {
+        shapeRenderer.setColor(this.blockColor);
+        shapeRenderer.identity();
+        if (this.blockScale != 1.0f) {
+            float f = this.blockScale * this.pos.width;
+            float f2 = Math.min((float)(1.1f * f), (float)this.pos.width);
+            Rectangle rectangle = new Rectangle(this.pos);
+            Rectangle rectangle2 = new Rectangle(this.pos);
+            rectangle2.width = f2;
+            rectangle2.height = f2;
+            rectangle2.setCenter(this.center);
+            rectangle.width = f;
+            rectangle.height = f;
+            rectangle.setCenter(this.center);
+            this.alpha.set(this.blockColor);
+            this.alpha.a = this.targetAlphaFill;
+            shapeRenderer.setColor(this.alpha);
+            shapeRenderer.rect(rectangle2.x, rectangle2.y, rectangle2.width, rectangle2.height);
+            shapeRenderer.setColor(this.charColor);
+            this.roundedRect(shapeRenderer, rectangle2.x, rectangle2.y, rectangle2.width, rectangle2.height, 10.0f, false);
+            shapeRenderer.setColor(this.blockColor);
+            this.roundedRect(shapeRenderer, rectangle.x, rectangle.y, rectangle.width, rectangle.height, this.pos.width / 35.0f, false);
+            return;
+        }
+        if (this.angle == 0.0f) {
+            this.roundedRect(shapeRenderer, this.pos.x, this.pos.y, this.pos.width, this.pos.height, this.pos.width / 35.0f, true);
+            return;
+        }
+        shapeRenderer.rect(this.pos.x, this.pos.y, this.pos.width / 2.0f, this.pos.height / 2.0f, this.pos.width, this.pos.height, 1.0f, 1.0f, this.angle);
+    }
+
+    @Override
+    void renderSprites(SpriteBatch spriteBatch, BitmapFont bitmapFont) {
+        bitmapFont.setColor(this.charColor);
+        bitmapFont.getData().setScale(bitmapFont.getData().scaleX * this.blockScale);
+        if (this.blockScale != 1.0f) {
+            GlyphLayout glyphLayout = new GlyphLayout();
+            glyphLayout.setText(bitmapFont, "" + this.letter + "");
+            float f = glyphLayout.width;
+            float f2 = glyphLayout.height;
+            bitmapFont.draw((Batch)spriteBatch, "" + this.letter + "", this.pos.x + this.pos.width / 2.0f - f / 2.0f, this.pos.y + this.pos.height / 2.0f + f2 / 2.0f);
+            return;
+        }
+        bitmapFont.draw((Batch)spriteBatch, "" + this.letter + "", this.pos.x + this.pos.width / 2.0f - this.letterWidth / 2.0f, this.pos.y + this.pos.height / 2.0f + this.letterHeight / 2.0f);
+    }
+
+    public void roundedRect(ShapeRenderer shapeRenderer, float f, float f2, float f3, float f4, float f5, boolean bl) {
+        if (bl) {
+            shapeRenderer.rect(f + f5, f2 + f5, f3 - 2.0f * f5, f4 - 2.0f * f5);
+        }
+        shapeRenderer.rect(f + f5, f2, f3 - 2.0f * f5, f5);
+        shapeRenderer.rect(f + f3 - f5, f2 + f5, f5, f4 - 2.0f * f5);
+        shapeRenderer.rect(f + f5, f2 + f4 - f5, f3 - 2.0f * f5, f5);
+        shapeRenderer.rect(f, f2 + f5, f5, f4 - 2.0f * f5);
+        shapeRenderer.arc(f + f5, f2 + f5, f5, 180.0f, 90.0f);
+        shapeRenderer.arc(f + f3 - f5, f2 + f5, f5, 270.0f, 90.0f);
+        shapeRenderer.arc(f + f3 - f5, f2 + f4 - f5, f5, 0.0f, 90.0f);
+        shapeRenderer.arc(f + f5, f2 + f4 - f5, f5, 90.0f, 90.0f);
+    }
+
+    public void setCurState(AnimState animState) {
+        this.curState = animState;
+    }
+
+    public void setIsHint(boolean bl) {
+        this.isHint = bl;
+        if (this.curState == AnimState.NORMAL) {
+            this.curState = AnimState.NORMALTOHINT;
         }
     }
 
-    public static enum AnimState {
+    void setSelected(boolean bl) {
+        this.selected = bl;
+    }
+
+    public void setWordPosition(int n) {
+        this.wordPosition = n;
+        this.targetAlphaFill = 0.2f + 0.03f * (float)n;
+    }
+
+    /*
+     * Enabled aggressive block sorting
+     * Lifted jumps to return sites
+     */
+    @Override
+    void update() {
+        this.center = this.pos.getCenter(this.center);
+        switch (this.curState) {
+            case ANIM_START: {
+                if (this.blockAnimation.update() != BlockAnimation.AnimState.DONE) return;
+                this.curState = AnimState.ANIM_START_DONE;
+                return;
+            }
+            case ANIM_START_DONE: {
+                this.curState = AnimState.NORMAL;
+                hintLoop = new HintLoop();
+            }
+            case NORMAL: {
+                if (this.isHint) {
+                    Color color = this.blockColor;
+                    float f = 1.0f - HintLoop.val;
+                    float f2 = 1.0f - HintLoop.val;
+                    color.set(f, f2, 1.0f - HintLoop.val, 1.0f);
+                    Color color2 = this.charColor;
+                    float f3 = HintLoop.val;
+                    float f4 = HintLoop.val;
+                    color2.set(f3, f4, HintLoop.val, 1.0f);
+                } else {
+                    this.blockColor = Color.WHITE.cpy();
+                    this.charColor = Color.BLACK.cpy();
+                }
+                if (!this.selected) return;
+                this.curState = AnimState.NORMALTOSELECTED;
+                this.update();
+                break;
+            }
+            case NORMALTOHINT: {
+                this.interpSteps = (int)(0.3333f * (float)this.hintInterpSteps);
+                this.curState = AnimState.NORMALTOHINT_ANIM;
+                ParticleManager.Inst().createEffect("hint.txt", this.center, false);
+                this.hintAnimIncreasing = true;
+                this.hintAnimRotateCount = 0;
+            }
+            case NORMALTOHINT_ANIM: {
+                if (this.hintAnimRotateCount >= 4) {
+                    this.angle = 0.0f;
+                    this.blockScale = 1.0f;
+                    this.curState = AnimState.NORMAL;
+                    return;
+                }
+                if (this.hintAnimIncreasing) {
+                    int n = this.interpSteps;
+                    this.interpSteps = n + 1;
+                    if (n >= this.hintInterpSteps) {
+                        this.hintAnimIncreasing = false;
+                        this.hintAnimRotateCount = 1 + this.hintAnimRotateCount;
+                    }
+                } else {
+                    int n = this.interpSteps;
+                    this.interpSteps = n - 1;
+                    if (n <= 0) {
+                        this.hintAnimIncreasing = true;
+                    }
+                }
+                this.angle = 350.0f + 20.0f * Interpolation.sineOut.apply((float)this.interpSteps / (float)this.hintInterpSteps);
+                break;
+            }
+            case NORMALTOSELECTED: {
+                this.interpSteps = 0;
+                this.curState = AnimState.NORMALTOSELECTED_ANIM;
+            }
+            case NORMALTOSELECTED_ANIM: {
+                int n = this.interpSteps;
+                this.interpSteps = n + 1;
+                if ((float)n <= this.maxInterpSteps) {
+                    float f = Interpolation.exp5Out.apply((float)this.interpSteps / this.maxInterpSteps);
+                    this.blockColor.set(1.0f - f, 1.0f - f, 1.0f - f, 1.0f);
+                    this.charColor.set(f, f, f, 1.0f);
+                    this.blockScale = 1.0f - f * 0.12f;
+                } else {
+                    this.curState = AnimState.SELECTED;
+                }
+                if (this.found) {
+                    this.curState = AnimState.TOFOUND;
+                    return;
+                }
+                if (this.selected) return;
+                this.curState = AnimState.SELECTEDTONORMAL;
+                break;
+            }
+            case SELECTED: {
+                this.blockColor = Color.BLACK.cpy();
+                if (this.selected) break;
+                this.curState = AnimState.SELECTEDTONORMAL;
+                break;
+            }
+            case DISSOLVING: {
+                float f = this.dissolveSteps;
+                this.dissolveSteps = f + 1.0f;
+                if (f <= this.dissolveInterpSteps) {
+                    float f5;
+                    this.blockColor.a = f5 = 1.0f - Interpolation.exp5Out.apply(this.dissolveSteps / 20.0f);
+                    this.charColor.a = f5;
+                    return;
+                }
+                this.curState = AnimState.FOUND;
+                break;
+            }
+            case FALLING: {
+                if (this.pos.y > this.targetPos.y) {
+                    this.velocity = 4.0f + this.velocity;
+                    this.pos.setY(this.pos.y - this.velocity);
+                    if (this.pos.y > this.targetPos.y) return;
+                    this.pos.set(this.targetPos);
+                    this.velocity = 0.0f;
+                    return;
+                }
+                this.curState = AnimState.NORMAL;
+                this.update();
+                break;
+            }
+            case SELECTEDTONORMAL: {
+                this.interpSteps = 0;
+                this.curState = AnimState.SELECTEDTONORMAL_ANIM;
+            }
+            case SELECTEDTONORMAL_ANIM: {
+                int n = this.interpSteps;
+                this.interpSteps = n + 1;
+                if ((float)n < this.maxInterpSteps) {
+                    float f = Interpolation.linear.apply((float)this.interpSteps / this.maxInterpSteps);
+                    this.blockColor.set(f, f, f, 1.0f);
+                    this.charColor.set(1.0f - f, 1.0f - f, 1.0f - f, 1.0f);
+                    this.blockScale = 0.88f + f * 0.12f;
+                    return;
+                }
+                this.blockColor.set(1.0f, 1.0f, 1.0f, 1.0f);
+                this.charColor.set(0.0f, 0.0f, 0.0f, 1.0f);
+                this.curState = AnimState.NORMAL;
+                this.blockScale = 1.0f;
+                break;
+            }
+        }
+
+    }
+
+    public enum AnimState {
         ANIM_START,
+        ANIM_START_DONE,
         NORMAL,
         NORMALTOHINT,
         NORMALTOHINT_ANIM,
@@ -65,226 +325,7 @@ public class Block extends DrawableObject {
         SELECTEDTONORMAL_ANIM,
         TOFOUND,
         FOUND
-
-    }
-
-    private AnimState curState;
-
-    public AnimState getCurState() {
-        return curState;
-    }
-
-    public void setCurState(AnimState state) {
-
-        curState = state;
-    }
-
-    void setFound(boolean blockFound) {
-        found = blockFound;
-
-    }
-
-    void setSelected(boolean sel) {
-        selected = sel;
-    }
-
-    boolean getSelected() {
-        return selected;
-    }
-
-    boolean isTouched(float X, float Y, float inset) {
-        if (pos.x + inset < X && (pos.x + pos.width - inset) > X)
-            if (pos.y + inset < Y && (pos.y + pos.height - inset) > Y)
-                return true;
-        return false;
-    }
-
-    static HintLoop hintLoop;
-    float maxInterpSteps = 20;
-    int interpSteps = 0;
-    int hintInterpSteps = 5;
-    boolean hintAnimIncreasing = true;
-    int hintAnimRotateCount = 0;
-    float dissolveInterpSteps = 40;
-    float dissolveSteps = 0;
-
-    @Override
-    void update() {
-        center = pos.getCenter(center);
-
-        switch (curState) {
-            case ANIM_START:
-                curState = AnimState.NORMAL;
-                hintLoop = new HintLoop();
-                break;
-            case NORMAL:
-                if (isHint) {
-                    blockColor.set(1.0f - hintLoop.val, 1.0f - hintLoop.val, 1.0f - hintLoop.val, 1);
-                    charColor.set(hintLoop.val, hintLoop.val, hintLoop.val, 1);
-                } else {
-                    blockColor = Color.WHITE.cpy();
-                    charColor = Color.BLACK.cpy();
-                }
-                if (selected) {
-                    curState = AnimState.NORMALTOSELECTED;
-                    update();
-                }
-                break;
-            case NORMALTOHINT:
-                interpSteps = (int) (.3333f * hintInterpSteps);
-                curState = AnimState.NORMALTOHINT_ANIM;
-                hintAnimIncreasing = true;
-                hintAnimRotateCount = 0;
-            case NORMALTOHINT_ANIM:
-                if (hintAnimRotateCount < 4) {
-                    if (hintAnimIncreasing) {
-                        if (interpSteps++ >= hintInterpSteps) {
-                            hintAnimIncreasing = false;
-                            hintAnimRotateCount++;
-                        }
-                    } else {
-                        if (interpSteps-- <= 0) {
-                            hintAnimIncreasing = true;
-                        }
-                    }
-                    float angleVal = Interpolation.sineOut.apply(interpSteps / (float) hintInterpSteps);
-                    angle = 350 + angleVal * 20;
-                    //blockColor.set(1.0f - hintLoop.val, 1.0f - hintLoop.val, 1.0f - hintLoop.val, 1);
-                    //charColor.set(hintLoop.val, hintLoop.val, hintLoop.val, 1);
-                } else {
-                    angle = 0;
-                    blockScale = 1.0f;
-                    curState = AnimState.NORMAL;
-                }
-                break;
-            case NORMALTOSELECTED:
-                interpSteps = 0;
-                curState = AnimState.NORMALTOSELECTED_ANIM;
-            case NORMALTOSELECTED_ANIM:
-                if (interpSteps++ <= maxInterpSteps) {
-                    float val = Interpolation.exp5Out.apply(interpSteps / maxInterpSteps);
-                    blockColor.set(1.0f - val, 1.0f - val, 1.0f - val, 1);
-                    charColor.set(val, val, val, 1);
-                    blockScale = 1.0f - val * .12f;
-
-                } else
-                    curState = AnimState.SELECTED;
-                if (found)
-                    curState = AnimState.TOFOUND;
-                else if (!selected)
-                    curState = AnimState.SELECTEDTONORMAL;
-                break;
-            case SELECTED:
-                blockColor = Color.BLACK.cpy();
-                if (!selected)
-                    curState = AnimState.SELECTEDTONORMAL;
-                break;
-            case DISSOLVING:
-                if (dissolveSteps++ <= dissolveInterpSteps) {
-                    float val = 1.f - Interpolation.exp5Out.apply(dissolveSteps / 60.f);
-                    blockColor.a = val;
-                    charColor.a = val;
-                } else
-                    curState = AnimState.FOUND;
-                break;
-            case FALLING:
-                if (pos.y > targetPos.y) {
-                    velocity += 3;
-                    pos.setY(pos.y - velocity);
-                    if (pos.y < targetPos.y) {
-                        pos.set(targetPos);
-                        velocity = 0;
-                    }
-                } else
-                    curState = AnimState.NORMAL;
-                break;
-            case SELECTEDTONORMAL:
-                interpSteps = 0;
-                curState = AnimState.SELECTEDTONORMAL_ANIM;
-            case SELECTEDTONORMAL_ANIM:
-                if (interpSteps++ <= maxInterpSteps) {
-                    float val = Interpolation.exp10Out.apply(interpSteps / maxInterpSteps);
-                    blockColor.set(val, val, val, 1);
-                    charColor.set(1.0f - val, 1.0f - val, 1.0f - val, 1);
-                    blockScale = .88f + val * .12f;
-
-                } else {
-                    blockColor.set(1, 1, 1, 1);
-                    charColor.set(0, 0, 0, 1);
-                    curState = AnimState.NORMAL;
-                    blockScale = 1f;
-                }
-                break;
-        }
-    }
-
-    @Override
-    void renderShapes(ShapeRenderer shapeRenderer) {
-        shapeRenderer.setColor(blockColor);
-        shapeRenderer.identity();
-
-        if (blockScale != 1.0f) {
-
-            float width = blockScale * pos.width;
-            float outlineWidth = Math.min(width * 1.1f, pos.width);
-            com.badlogic.gdx.math.Rectangle r = new com.badlogic.gdx.math.Rectangle(pos);
-            com.badlogic.gdx.math.Rectangle outline = new com.badlogic.gdx.math.Rectangle(pos);
-
-            outline.width = outlineWidth;
-            outline.height = outlineWidth;
-            outline.setCenter(center);
-            r.width = width;
-            r.height = width;
-            r.setCenter(center);
-            shapeRenderer.setColor(charColor);
-            //shapeRenderer.rect(outline.x, outline.y, outline.width, outline.height);
-            roundedRect(shapeRenderer, outline.x, outline.y, outline.width, outline.height, 10);
-            shapeRenderer.setColor(blockColor);
-            //shapeRenderer.rect(r.x, r.y, r.width, r.height);
-            roundedRect(shapeRenderer, r.x, r.y, r.width, r.height, pos.width / 35.0f);
-        } else {
-
-            if (angle == 0)
-                roundedRect(shapeRenderer, pos.x, pos.y, pos.width, pos.height, pos.width / 35.0f);
-            else {
-                shapeRenderer.rect(pos.x, pos.y, pos.width/2, pos.height/2, pos.width, pos.height, 1.f, 1.f, angle);
-            }
-        }
-        //Gdx.gl.glDisable(GL20.GL_BLEND);
-    }
-
-    @Override
-    void renderSprites(SpriteBatch spriteBatch, BitmapFont font) {
-
-        font.setColor(charColor);
-        font.getData().setScale(font.getData().scaleX * blockScale);
-        if (blockScale != 1.0f) {
-            GlyphLayout glyphLayout = new GlyphLayout();
-            String item = letter + "";
-            glyphLayout.setText(font, item);
-            float tempLetterWidth = glyphLayout.width;
-            float tempLetterHeight = glyphLayout.height;
-
-            font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - tempLetterWidth / 2, pos.y + pos.height / 2 + tempLetterHeight / 2);
-        } else
-            font.draw(spriteBatch, letter + "", pos.x + pos.width / 2 - letterWidth / 2, pos.y + pos.height / 2 + letterHeight / 2);
-    }
-
-    public void roundedRect(ShapeRenderer shapeRenderer, float x, float y, float width, float height, float radius) {
-        // Central rectangle
-        shapeRenderer.rect(x + radius, y + radius, width - 2 * radius, height - 2 * radius);
-
-        // Four side rectangles, in clockwise order
-        shapeRenderer.rect(x + radius, y, width - 2 * radius, radius);
-        shapeRenderer.rect(x + width - radius, y + radius, radius, height - 2 * radius);
-        shapeRenderer.rect(x + radius, y + height - radius, width - 2 * radius, radius);
-        shapeRenderer.rect(x, y + radius, radius, height - 2 * radius);
-
-        // Four arches, clockwise too
-        shapeRenderer.arc(x + radius, y + radius, radius, 180f, 90f);
-        shapeRenderer.arc(x + width - radius, y + radius, radius, 270f, 90f);
-        shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f);
-        shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f);
     }
 
 }
+

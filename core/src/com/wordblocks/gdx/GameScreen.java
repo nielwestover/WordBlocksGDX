@@ -1,152 +1,122 @@
 package com.wordblocks.gdx;
 
+import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.sun.glass.ui.Application;
 
-import particles.ParticleManager;
-
-/**
- * Created by a2558 on 3/21/2016.
- */
 public class GameScreen extends WordBlocksInputProcessor implements Screen {
-    public static final int worldWidth = 1200;
     public static final int worldHeight = 2133;
-    long t;
-    long nextGameTick = 0;
+    public static final int worldWidth = 1200;
     final int FRAMES_PER_SECOND = 60;
-    final int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
-
-    public WordBlocksRenderer wordBlocksRenderer;
-    public WordBlocksController wordBlocksController;
-    private float width, height;
-    ShapeRenderer shapeRenderer;
-    Viewport viewport;
+    final int SKIP_TICKS = 16;
+    WordBlocksGDX WBOverlord;
     OrthographicCamera camera;
+    boolean first = true;
+    private float height;
+    long nextGameTick = 0;
+    public boolean paused = false;
+    ShapeRenderer shapeRenderer;
     Skin skin;
     Stage stage;
-    WordBlocksGDX WBOverlord;
-    public GameScreen(WordBlocksGDX overlord){
-        WBOverlord = overlord;
+    long f119t;
+    Viewport viewport;
+    private float width;
+    public WordBlocksController wordBlocksController;
+    public WordBlocksRenderer wordBlocksRenderer;
+
+    public GameScreen(WordBlocksGDX overlord) {
+        this.WBOverlord = overlord;
     }
 
-    @Override
-    public void hide () {
+    public void hide() {
     }
 
-    @Override
-    public void show () {
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        viewport = new FitViewport(worldWidth, worldHeight, camera);
-        viewport.apply();
-
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
+    public void show() {
+        this.camera = new OrthographicCamera((float) Gdx.graphics.getWidth(), (float) Gdx.graphics.getHeight());
+        this.viewport = new FitViewport(1200.0f, 2133.0f, this.camera);
+        this.viewport.apply();
+        this.camera.position.set(this.camera.viewportWidth / 2.0f, this.camera.viewportHeight / 2.0f, 0.0f);
         Gdx.input.setInputProcessor(this);
-        shapeRenderer  = new ShapeRenderer();
-
-        wordBlocksController = new WordBlocksController(worldWidth, worldHeight, this);
-        wordBlocksRenderer = new WordBlocksRenderer(worldWidth, worldHeight, this);
-        wordBlocksRenderer.setCamera(camera);
-        wordBlocksController.update();//do initial update to set up board, so game is not null for the next call
-        ParticleManager.Inst().createEffect("snow.txt", new Vector2(0, worldHeight));
-
-        //skin = new Skin(Gdx.files.internal("uiskin.json"));
-        //stage = new Stage(viewport);
-        //stage.addActor(new TextButton("Refresh", skin, "default"));
+        this.shapeRenderer = new ShapeRenderer();
+        this.wordBlocksController = new WordBlocksController(1200.0f, 2133.0f, this);
+        this.wordBlocksRenderer = new WordBlocksRenderer(1200.0f, 2133.0f, this);
+        this.wordBlocksRenderer.setCamera(this.camera);
+        this.wordBlocksController.update();
     }
 
-    @Override
-    public void resume () {
-
+    public void pause() {
+        if (Gdx.app.getType() != ApplicationType.Desktop) {
+            this.paused = true;
+        }
     }
 
-    @Override
-    public void render (float delta) {
-        camera.update();
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+    public void resume() {
+        this.paused = false;
+    }
+
+    public void render(float delta) {
+        this.camera.update();
+        Color c = this.wordBlocksController.getClearColor();
+        Gdx.gl.glClearColor(c.r, c.g, c.b, c.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.gl.glEnable(GL20.GL_BLEND);
-
-        t = TimeUtils.millis();
-        if (t >= nextGameTick) {
-            wordBlocksController.update();
-            //Log.d("Update: ", String.valueOf(t));
-            nextGameTick = t + SKIP_TICKS;
+        this.f119t = TimeUtils.millis();
+        if (this.f119t >= this.nextGameTick && !this.paused) {
+            this.wordBlocksController.update();
+            this.nextGameTick = this.f119t + 16;
         }
-
-        //Log("Draw: ", String.valueOf(t));
-        wordBlocksRenderer.draw(wordBlocksController);
+        if (!this.paused) {
+            this.wordBlocksRenderer.draw(this.wordBlocksController);
+        }
     }
 
-    boolean first = true;
-    @Override
-    public void resize (int width, int height) {
-        viewport.update(width, height);
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        this.width = width;
-        this.height = height;
-
-        wordBlocksRenderer.setCamera(camera);
+    public void resize(int width, int height) {
+        this.viewport.update(width, height);
+        this.camera.position.set(this.camera.viewportWidth / 2.0f, this.camera.viewportHeight / 2.0f, 0.0f);
+        this.width = (float) width;
+        this.height = (float) height;
+        this.wordBlocksRenderer.setCamera(this.camera);
     }
 
-    @Override
-    public void pause () {
-
+    public void dispose() {
+        this.shapeRenderer.dispose();
     }
 
-    @Override
-    public void dispose () {
-        shapeRenderer.dispose();
-    }
-
-    @Override
-    public boolean touchDown (int x, int y, int pointer, int button) {
-        Vector3 screen = camera.unproject(new Vector3(x, y, 0), viewport.getScreenX(), viewport.getScreenY(), viewport.getScreenWidth(), viewport.getScreenHeight());
-        wordBlocksController.fingerPress = true;
-        wordBlocksController.X = screen.x;
-        wordBlocksController.Y = screen.y;
-
-        if (wordBlocksController.game.refresh.contains(screen.x, screen.y)) {
-            //automatically calls init on the renderer
-            wordBlocksController.init();
+    public boolean touchDown(int x, int y, int pointer, int button) {
+        Vector3 screen = this.camera.unproject(new Vector3((float) x, (float) y, 0.0f), (float) this.viewport.getScreenX(), (float) this.viewport.getScreenY(), (float) this.viewport.getScreenWidth(), (float) this.viewport.getScreenHeight());
+        this.wordBlocksController.fingerPress = true;
+        this.wordBlocksController.f85X = screen.x;
+        this.wordBlocksController.f86Y = screen.y;
+        if (this.wordBlocksController.game.refresh.contains(screen.x, screen.y)) {
+            this.wordBlocksController.init();
         }
-
-        if (wordBlocksController.game.skipNext.contains(screen.x, screen.y)) {
-            //automatically calls init on the renderer
-            MyApplication.incrementCurLevel();
-            wordBlocksController.init();
+        if (this.wordBlocksController.game.giveHint.contains(screen.x, screen.y)) {
+            this.wordBlocksController.giveHint();
         }
-
-        if (wordBlocksController.game.giveHint.contains(screen.x, screen.y)) {
-            wordBlocksController.giveHint();
-        }
-
         return true;
     }
 
-    @Override
-    public boolean touchUp (int x, int y, int pointer, int button) {
-        wordBlocksController.fingerPress = false;
+    public boolean touchUp(int x, int y, int pointer, int button) {
+        this.wordBlocksController.fingerPress = false;
         return true;
     }
 
-    @Override
-    public boolean touchDragged (int x, int y, int pointer) {
-        wordBlocksController.fingerMoving = true;
-        Vector3 screen = camera.unproject(new Vector3(x, y, 0), viewport.getScreenX(), viewport.getScreenY(), viewport.getScreenWidth(), viewport.getScreenHeight());
-        wordBlocksController.fingerPress = true;
-        wordBlocksController.X = screen.x;
-        wordBlocksController.Y = screen.y;
+    public boolean touchDragged(int x, int y, int pointer) {
+        this.wordBlocksController.fingerMoving = true;
+        Vector3 screen = this.camera.unproject(new Vector3((float) x, (float) y, 0.0f), (float) this.viewport.getScreenX(), (float) this.viewport.getScreenY(), (float) this.viewport.getScreenWidth(), (float) this.viewport.getScreenHeight());
+        this.wordBlocksController.fingerPress = true;
+        this.wordBlocksController.f85X = screen.x;
+        this.wordBlocksController.f86Y = screen.y;
         return true;
     }
 }

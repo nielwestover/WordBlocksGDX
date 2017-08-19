@@ -1,48 +1,45 @@
 package utils;
 
-import java.util.List;
-
 import helpers.RowColPair;
+import java.util.List;
+import java.util.Random;
 import solver.SolverBoard;
 
-/**
- * Created by a2558 on 4/20/2016.
- */
 public class Utils {
+    private static Random rand = new Random();
 
-    public static int getDimension(List<String> level)
-    {
-        int count = 0;
-        for (int i = 0; i < level.size(); ++i)
-        {
-            count += level.get(i).length();
-        }
-        return (int)Math.sqrt(count);
+    public static int getRandomInt(int max) {
+        return rand.nextInt(max);
     }
-    public static String ReverseString(String s)
-    {
+
+    public static float getRandomFloat(float max) {
+        return rand.nextFloat() * max;
+    }
+
+    public static int getDimension(List<String> level) {
+        int count = 0;
+        for (int i = 0; i < level.size(); i++) {
+            count += ((String) level.get(i)).length();
+        }
+        return (int) Math.sqrt((double) count);
+    }
+
+    public static String ReverseString(String s) {
         return new StringBuilder(s).reverse().toString();
     }
 
-    public static SolverBoard GetNewBoardState(SolverBoard board, RowColPair item)
-    {
-        //Make a copy of the board we can manipulate
+    public static SolverBoard GetNewBoardState(SolverBoard board, RowColPair item) {
         SolverBoard b = board.copy();
-
-        //Remove the first letter and add it to the solve order
-        b.words.set(0, board.words.get(0).substring(1));
-        int j;
-        if (b == null || b.solveOrder == null || board == null || item == null || board.getCell(item.Row, item.Col)== null)
+        b.words.set(0, ((String) board.words.get(0)).substring(1));
+        if (b == null || b.solveOrder == null || board == null || item == null || board.getCell(item.Row, item.Col) == null) {
             return null;
-        b.solveOrder.add(board.getCell(item.Row, item.Col).id);
-
-        //Make curCell point to location of letter we just processed
+        }
+        b.solveOrder.add(Integer.valueOf(board.getCell(item.Row, item.Col).id));
         b.curCell = item;
-
         return b;
     }
 
     private static String removeLastChar(String str) {
-        return str.substring(0,str.length()-1);
+        return str.substring(0, str.length() - 1);
     }
 }

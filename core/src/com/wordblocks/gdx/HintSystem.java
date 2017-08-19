@@ -1,84 +1,86 @@
 package com.wordblocks.gdx;
 
+import datatypes.Level;
 import java.util.ArrayList;
 import solver.LevelSolver;
 
-/**
- * Created by a2558 on 4/30/2016.
- */
 public class HintSystem {
-    int numHints;
-    boolean infiniteHints = true;
-    ArrayList<Integer> solveOrder = null;
-    int unsolvedHintIndex = 0;
-    int solverHintIndex;
     int dim;
-    boolean unsolvable = false;
     Game game;
+    boolean infiniteHints = true;
+    int numHints;
+    ArrayList<Integer> solveOrder = null;
+    int solverHintIndex;
+    boolean unsolvable = false;
+    int unsolvedHintIndex = 0;
 
     public HintSystem(Game game) {
         this.game = game;
-        dim = (int)Math.pow(game.grid.length, 2);
+        this.dim = (int) Math.pow((double) game.grid.length, 2.0d);
     }
 
     public boolean canGetHint() {
-        if (unsolvable)
+        if (this.unsolvable) {
             return false;
-        if  ((solveOrder != null && solverHintIndex >= solveOrder.size())
-                || unsolvedHintIndex >= dim)
+        }
+        if ((this.solveOrder != null && this.solverHintIndex >= this.solveOrder.size()) || this.unsolvedHintIndex >= this.dim) {
             return false;
-        if (infiniteHints || numHints > 0)
+        }
+        if (this.infiniteHints || this.numHints > 0) {
             return true;
+        }
         return false;
     }
 
-    public int getHintIndex(){
-        return Math.max(solverHintIndex, unsolvedHintIndex);
+    public int getHintIndex() {
+        return Math.max(this.solverHintIndex, this.unsolvedHintIndex);
     }
 
     public int getHint() {
-        if (!canGetHint())
+        if (!canGetHint()) {
             return -2;
-        //player hasn't removed any words yet - so use the board generation order as the hint
-        if (game.blocksLeft() == dim) {
+        }
+        if (this.game.blocksLeft() == this.dim) {
             return getUnsolvedHint();
         }
-        //need to run the solver...
-        else if (solveOrder == null && !unsolvable) {
-            datatypes.Level curState = new datatypes.Level();
-            curState.words = game.remainingWords();
-            curState.board = game.boardToList();
-            solveOrder = solver.LevelSolver.Solve(curState);
-            if (solveOrder == null)
-                unsolvable = true;
-        }
-        if (unsolvable)
-            return -1;
-        if (solveOrder != null && solverHintIndex < solveOrder.size()) {
-            return getSolverHint();
-        }
-        return -1;
-    }
-
-    public int getUnsolvedHint(){
-        for (int i = 0; i < game.grid.length; ++i) {
-            for (int j = 0; j < game.grid[i].length; ++j) {
-                if (game.grid[i][j].block == null)
-                    continue;
-                if (game.grid[i][j].block.hintIndex == unsolvedHintIndex) {
-                    unsolvedHintIndex++;
-                    return game.grid[i][j].block.id;
-                }
+        if (this.solveOrder == null && !this.unsolvable) {
+            Level curState = new Level();
+            curState.words = this.game.remainingWords();
+            curState.board = this.game.boardToList();
+            this.solveOrder = LevelSolver.Solve(curState);
+            if (this.solveOrder == null) {
+                this.unsolvable = true;
             }
         }
+        if (this.unsolvable || this.solveOrder == null || this.solverHintIndex >= this.solveOrder.size()) {
+            return -1;
+        }
+        return getSolverHint();
+    }
+
+    public int getUnsolvedHint() {
+        int i = 0;
+        while (i < this.game.grid.length) {
+            int j = 0;
+            while (j < this.game.grid[i].length) {
+                if (this.game.grid[i][j].block != null && this.game.grid[i][j].block.hintIndex == this.unsolvedHintIndex) {
+                    this.unsolvedHintIndex++;
+                    return this.game.grid[i][j].block.id;
+                }
+                j++;
+            }
+            i++;
+        }
         return -1;
     }
 
-    public int getSolverHint(){
-        Block b = game.getBlockByID(solveOrder.get(solverHintIndex));
-        if (b == null)
+    public int getSolverHint() {
+        if (this.game.getBlockByID(((Integer) this.solveOrder.get(this.solverHintIndex)).intValue()) == null) {
             return -1;
-
-        return solveOrder.get(solverHintIndex++);
+        }
+        ArrayList arrayList = this.solveOrder;
+        int i = this.solverHintIndex;
+        this.solverHintIndex = i + 1;
+        return ((Integer) arrayList.get(i)).intValue();
     }
 }

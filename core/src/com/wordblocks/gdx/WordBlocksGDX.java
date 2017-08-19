@@ -1,38 +1,36 @@
 package com.wordblocks.gdx;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 
-public class WordBlocksGDX extends com.badlogic.gdx.Game {
-    @Override
+public class WordBlocksGDX extends Game {
     public void create() {
         setScreen(new GameScreen(this));
-        //setScreen(new tests.TestInterpolation());
     }
-    @Override
-    public void dispose() {
 
+    public void dispose() {
     }
-    @Override
+
     public Screen getScreen() {
         return super.getScreen();
     }
-    @Override
-    public void pause() {
 
+    public void pause() {
+        getScreen().pause();
     }
-    @Override
+
     public void render() {
-        getScreen().render(0);
+        getScreen().render(0.0f);
     }
-    @Override
+
     public void resize(int width, int height) {
         getScreen().resize(width, height);
     }
-    @Override
-    public void resume() {
 
+    public void resume() {
+        getScreen().resume();
     }
-    @Override
+
     public void setScreen(Screen screen) {
         super.setScreen(screen);
     }

@@ -1,309 +1,386 @@
 package com.wordblocks.gdx;
 
+import Answers.AnswerListView;
+import Answers.SelectedWordView;
+import Answers.SelectedWordView.AnimState;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.math.Rectangle;
-
+import com.wordblocks.gdx.Game.Cell;
 import helpers.RowColPair;
+import particles.ParticleManager;
 
-/**
- * Created by a2558 on 2/21/2016.
- */
 public class WordBlocksController {
-
-    public boolean fingerPress = false;
-    public boolean fingerMoving = false;
-    public float X;
-    public float Y;
-    private RowColPair selectedBlock;
-    private RowColPair previousSelectedBlock;
-    public BitmapFont fontBlocks;
-    public BitmapFont fontAnswers;
-    public BitmapFont fontCurWord;
-
-    Game game;
-
-    public enum GameStates {
-        INIT,
-        WAIT_FOR_PRESS,
-        FINGER_DOWN,
-        MOVING,
-        FINGER_UP,
-        ANIMATE_DISSOLVE,
-        ANIMATE_DROP_BLOCKS,
-        CHECK_LEVEL_FINISHED,
-        GAME_OVER
-    }
-
-    public float width, height;
     GameScreen Overlord;
-
+    public float f85X;
+    public float f86Y;
+    AnswerListView answerView;
+    Color clearColor = new Color();
+    int clearColorCounter = 0;
+    ClearColorState clearColorState = ClearColorState.IDLE;
+    public boolean fingerMoving = false;
+    public boolean fingerPress = false;
+    public BitmapFont fontAnswers;
+    public BitmapFont fontBlocks;
+    public BitmapFont fontCurWord;
+    Game game;
+    public GameStates gameState = GameStates.INIT;
+    public float height;
+    boolean hintAvailable = true;
+    public HintSystem hintSystem = null;
+    public float origBlockFontScale;
+    private RowColPair previousSelectedBlock;
+    private RowColPair selectedBlock;
+    SelectedWordView selectedWordView;
+    public float width;
 
     public WordBlocksController(float width, float height, GameScreen overlord) {
-        Overlord = overlord;
+        this.Overlord = overlord;
         this.width = width;
         this.height = height;
+        MyApplication.loadProfile();
     }
 
-    public float origBlockFontScale;
     float getBlockFontScale() {
-        //This is smallest the block font will be
-        float origScale = 110.0f / 128.0f;//Based on 7x7, 160 pixel blocks
-        //So scale it based on how much larger the current boxDim is than the original 160
-        float scaleFactor = game.dims.boxDim / 160.0f;
-        return origScale * scaleFactor;
+        return 0.859375f * (this.game.dims.boxDim / 160.0f);
     }
-
-
-    public GameStates gameState = GameStates.INIT;
 
     public void init() {
-        gameState = GameStates.INIT;
+        this.gameState = GameStates.INIT;
     }
 
-    private void initFonts(){
-        //FreeTypeFontGenerator generatorAnswers = new FreeTypeFontGenerator(Gdx.files.internal("fonts/lucon.ttf"));
+    private void initFonts() {
         FreeTypeFontGenerator generatorBlocks = new FreeTypeFontGenerator(Gdx.files.internal("fonts/calibrib.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-
+        FreeTypeFontParameter parameter = new FreeTypeFontParameter();
         parameter.size = 115;
-        fontBlocks = generatorBlocks.generateFont(parameter);
-        fontBlocks.setColor(Color.BLACK);
-
-        fontCurWord = generatorBlocks.generateFont(parameter);
-        fontCurWord.setColor(Color.WHITE);
-
-        fontAnswers = generatorBlocks.generateFont(parameter);
-
-        fontBlocks.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        fontCurWord.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        fontAnswers.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        this.fontBlocks = generatorBlocks.generateFont(parameter);
+        this.fontBlocks.setColor(Color.BLACK);
+        this.fontCurWord = generatorBlocks.generateFont(parameter);
+        this.fontCurWord.setColor(Color.WHITE);
+        this.fontAnswers = generatorBlocks.generateFont(parameter);
+        this.fontBlocks.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
+        this.fontCurWord.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
+        this.fontAnswers.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
         float blockFontSize = getBlockFontScale();
-        origBlockFontScale = blockFontSize;
-        fontBlocks.getData().setScale(blockFontSize, blockFontSize);
-        fontCurWord.getData().setScale(100.0f / 128.0f);
-        fontAnswers.getData().setScale(65.0f / 128.0f);
-
-        generatorBlocks.dispose(); // don't forget to dispose to avoid memory leaks!
-        //generatorAnswers.dispose(); // don't forget to dispose to avoid memory leaks!
+        this.origBlockFontScale = blockFontSize;
+        this.fontBlocks.getData().setScale(blockFontSize, blockFontSize);
+        this.fontCurWord.getData().setScale(0.78125f);
+        this.fontAnswers.getData().setScale(0.5078125f);
+        generatorBlocks.dispose();
     }
 
     public void update() {
-        switch (gameState) {
+        switch (this.gameState) {
             case INIT:
-                game = new Game(MyApplication.getCurLevel());
+                ParticleManager.Inst().startRandomBackgroundEffect();
+                this.clearColor.set(Color.BLACK);
+                this.game = new Game(MyApplication.getCurLevel());
                 initGameDimensions();
-
-                initFonts();
-                answerView = new Answers.AnswerListView(game.answers, fontAnswers);
-                game.refresh = new Rectangle(width - 150, 0, 150, 150);
-                game.skipNext = new Rectangle(0, 0, 150, 150);
-                game.giveHint = new Rectangle(width / 2 - 75, 0, 150, 150);
-                hintSystem = null;
-                Block.hintLoop.reset();
-
-
-                //always reinitialize the renderer when starting over
-                Overlord.wordBlocksRenderer.init();
-                gameState = GameStates.WAIT_FOR_PRESS;
+                this.answerView = new AnswerListView(this.game.answers, this.fontAnswers);
+                this.selectedWordView = new SelectedWordView(this.game, this.answerView);
+                this.game.refresh = new Rectangle(this.width - 350.0f, 0.0f, 350.0f, 150.0f);
+                this.game.giveHint = new Rectangle(0.0f, 0.0f, 350.0f, 150.0f);
+                this.hintSystem = null;
+                HintLoop hintLoop = Block.hintLoop;
+                HintLoop.reset();
+                this.Overlord.wordBlocksRenderer.init();
+                this.gameState = GameStates.ENTER_ANIM;
+                for (int i = 0; i < this.game.grid.length; i++) {
+                    for (int j = 0; j < this.game.grid[i].length; j++) {
+                        this.game.grid[i][j].block.targetPos.set(this.game.grid[i][j].cellPos);
+                    }
+                }
+                break;
+            case ENTER_ANIM:
+                if (!stillEntering()) {
+                    this.gameState = GameStates.WAIT_FOR_PRESS;
+                    break;
+                }
                 break;
             case WAIT_FOR_PRESS:
-                if (fingerPress) {
-                    selectedBlock = new RowColPair(-1, -1);
-                    previousSelectedBlock = new RowColPair(-1, -1);
-                    gameState = GameStates.FINGER_DOWN;
+                if (this.fingerPress) {
+                    this.selectedBlock = new RowColPair(-1, -1);
+                    this.previousSelectedBlock = new RowColPair(-1, -1);
+                    this.gameState = GameStates.FINGER_DOWN;
                     update();
+                    break;
                 }
                 break;
             case FINGER_DOWN:
                 doBlockLogic();
-                if (fingerMoving || !fingerPress) {
-                    gameState = GameStates.MOVING;
+                if (this.fingerMoving || !this.fingerPress) {
+                    this.gameState = GameStates.MOVING;
                     update();
+                    break;
                 }
-                break;
             case MOVING:
-                if (!fingerPress) {
-                    gameState = GameStates.FINGER_UP;
+                if (!this.fingerPress) {
+                    this.gameState = GameStates.FINGER_UP;
                 }
                 doBlockLogic();
                 break;
             case FINGER_UP:
-                if (game.getSelectedWord(game.selectedWord) != null) {
-                    gameState = GameStates.ANIMATE_DISSOLVE;
-                    setBlocksToDissolve();
-                } else {
-                    game.deselectAll();
-                    gameState = GameStates.WAIT_FOR_PRESS;
+                if (this.game.getSelectedWord(this.game.selectedWord) == null) {
+                    this.game.deselectAll();
+                    this.gameState = GameStates.WAIT_FOR_PRESS;
+                    break;
                 }
-                break;
+                this.gameState = GameStates.ANIMATE_DISSOLVE;
+                this.selectedWordView.state = AnimState.MOVE_TO_FOUND;
+                setBlocksToDissolve();
+                this.game.getSelectedWord(this.game.selectedWord).found = true;
+                if (this.game.remainingWords().size() != 0) {
+                    Gdx.input.vibrate(100);
+                    break;
+                } else {
+                    Gdx.input.vibrate(1000);
+                    break;
+                }
             case ANIMATE_DISSOLVE:
                 if (!blocksStillDissolving()) {
-                    gameState = GameStates.GAME_OVER.ANIMATE_DROP_BLOCKS;
-                    game.removeWordFound();
-                    game.deselectAll();
-                    hintSystem = null;
+                    this.gameState = GameStates.ANIMATE_DROP_BLOCKS;
+                    this.game.removeWordFound();
+                    this.game.deselectAll();
+                    this.hintSystem = null;
                     removeHints();
-                    game.dropBlocks();
+                    this.game.dropBlocks();
                     setBlocksToFall();
+                    update();
+                    break;
                 }
                 break;
             case ANIMATE_DROP_BLOCKS:
-                //runs until finished
-                if (!blocksStillFalling())
-                    gameState = GameStates.CHECK_LEVEL_FINISHED;
+                if (!blocksStillFalling()) {
+                    this.gameState = GameStates.CHECK_LEVEL_FINISHED;
+                    update();
+                    break;
+                }
                 break;
             case CHECK_LEVEL_FINISHED:
-                if (game.blocksLeft() == 0) {
-                    if (MyApplication.incrementCurLevel()) {
-                        gameState = GameStates.INIT;
-                    } else
-                        gameState = GameStates.GAME_OVER;
-                } else
-                    gameState = GameStates.WAIT_FOR_PRESS;
-            case GAME_OVER:
+                if (this.game.blocksLeft() == 0) {
+                    if (this.selectedWordView.state != AnimState.MOVE_TO_FOUND_ANIM && MyApplication.incrementCurLevel()) {
+                        MyApplication.getPreferences().putInteger("pack", MyApplication.curPackIndex);
+                        MyApplication.getPreferences().putInteger("level", MyApplication.curLevelIndex);
+                        MyApplication.getPreferences().flush();
+                        this.gameState = GameStates.INIT;
+                        break;
+                    }
+                }
+                else
+                    this.gameState = GameStates.WAIT_FOR_PRESS;
                 break;
         }
-
-        answerView.update();
+        this.answerView.update();
+        this.selectedWordView.update();
+        updateClearColor();
         updateBlocks();
     }
-    Answers.AnswerListView answerView;
 
     private void setBlocksToFall() {
-        for (int i = 0; i < game.grid.length; ++i) {
-            for (int j = 0; j < game.grid[i].length; ++j) {
-                if (game.grid[i][j].block == null)
-                    continue;
-                game.grid[i][j].block.setCurState(Block.AnimState.FALLING);
-                game.grid[i][j].block.targetPos = game.grid[i][j].cellPos;
+        for (int i = 0; i < this.game.grid.length; i++) {
+            for (int j = 0; j < this.game.grid[i].length; j++) {
+                if (this.game.grid[i][j].block != null) {
+                    this.game.grid[i][j].block.setCurState(Block.AnimState.FALLING);
+                    this.game.grid[i][j].block.targetPos = this.game.grid[i][j].cellPos;
+                }
             }
         }
     }
 
     private void setBlocksToDissolve() {
-        for (RowColPair rc : game.selectedChain)
-            game.grid[rc.Row][rc.Col].block.setCurState(Block.AnimState.DISSOLVING);
-
+        for (RowColPair rc : this.game.selectedChain) {
+            this.game.grid[rc.Row][rc.Col].block.setCurState(Block.AnimState.DISSOLVING);
+        }
     }
 
     private void updateBlocks() {
-        for (int i = 0; i < game.grid.length; ++i) {
-            for (int j = 0; j < game.grid[i].length; ++j) {
-                if (game.grid[i][j].block == null)
-                    continue;
-                game.grid[i][j].block.update();
+        for (int i = 0; i < this.game.grid.length; i++) {
+            for (int j = 0; j < this.game.grid[i].length; j++) {
+                if (this.game.grid[i][j].block != null) {
+                    this.game.grid[i][j].block.update();
+                }
             }
         }
     }
 
-    private boolean blocksStillFalling() {
-        for (int i = 0; i < game.grid.length; ++i) {
-            for (int j = 0; j < game.grid[i].length; ++j) {
-                if (game.grid[i][j].block == null)
-                    continue;
-                if (game.grid[i][j].block.getCurState() == Block.AnimState.FALLING)
+    private boolean stillEntering() {
+        for (int i = 0; i < this.game.grid.length; i++) {
+            for (Cell cell : this.game.grid[i]) {
+                if (cell.block.getCurState() == Block.AnimState.ANIM_START) {
                     return true;
+                }
             }
+        }
+        return false;
+    }
+
+    private boolean blocksStillFalling() {
+        int i = 0;
+        while (i < this.game.grid.length) {
+            int j = 0;
+            while (j < this.game.grid[i].length) {
+                if (this.game.grid[i][j].block != null && this.game.grid[i][j].block.getCurState() == Block.AnimState.FALLING) {
+                    return true;
+                }
+                j++;
+            }
+            i++;
         }
         return false;
     }
 
     private boolean blocksStillDissolving() {
-        for (int i = 0; i < game.grid.length; ++i) {
-            for (int j = 0; j < game.grid[i].length; ++j) {
-                if (game.grid[i][j].block == null)
-                    continue;
-                if (game.grid[i][j].block.getCurState() == Block.AnimState.DISSOLVING)
+        int i = 0;
+        while (i < this.game.grid.length) {
+            int j = 0;
+            while (j < this.game.grid[i].length) {
+                if (this.game.grid[i][j].block != null && this.game.grid[i][j].block.getCurState() == Block.AnimState.DISSOLVING) {
                     return true;
+                }
+                j++;
             }
+            i++;
         }
         return false;
     }
 
     public void initGameDimensions() {
-        game.dims.screenWidth = width;
-
-        game.dims.boxGap = (25 - 2 * game.grid.length);
-        game.dims.padding = 40;
-        game.dims.boxDim = (game.dims.screenWidth - (game.dims.padding * 2 + game.dims.boxGap * (game.grid.length - 1))) / (game.grid.length * 1.0f);
-        game.dims.inset = .13f * game.dims.boxDim;
-        game.dims.topPadding = 100;
+        this.game.dims.screenWidth = this.width;
+        this.game.dims.boxGap = (float) (25 - (this.game.grid.length * 2));
+        this.game.dims.padding = 40.0f;
+        this.game.dims.boxDim = (this.game.dims.screenWidth - ((this.game.dims.padding * 2.0f) + (this.game.dims.boxGap * ((float) (this.game.grid.length - 1))))) / (((float) this.game.grid.length) * 1.0f);
+        this.game.dims.inset = 0.13f * this.game.dims.boxDim;
+        this.game.dims.topPadding = 100.0f;
+        initFonts();
+        for (int i = 0; i < this.game.grid.length; i++) {
+            for (int j = 0; j < this.game.grid[i].length; j++) {
+                if (this.game.grid[i][j].block != null) {
+                    GlyphLayout glyphLayout = new GlyphLayout();
+                    glyphLayout.setText(this.fontBlocks, this.game.grid[i][j].block.letter + BuildConfig.FLAVOR);
+                    this.game.grid[i][j].block.letterWidth = glyphLayout.width;
+                    this.game.grid[i][j].block.letterHeight = glyphLayout.height;
+                    this.game.grid[i][j].cellPos = new Rectangle((float) ((int) (this.game.dims.padding + ((this.game.dims.boxGap + this.game.dims.boxDim) * ((float) i)))), (this.height - this.game.dims.topPadding) - ((float) ((int) ((this.game.dims.boxGap + this.game.dims.boxDim) * ((float) (j + 1))))), this.game.dims.boxDim, this.game.dims.boxDim);
+                    this.game.grid[i][j].block.pos.set(this.game.grid[i][j].cellPos);
+                }
+            }
+        }
     }
 
     private void doBlockLogic() {
         findSelectedBlock();
-        if (isSelectedBlockValid())
+        if (isSelectedBlockValid()) {
             setSelectedBlock();
+        }
     }
 
     private boolean isSelectedBlockValid() {
-        //initial case
-        if (previousSelectedBlock.Row == -1) {
-            previousSelectedBlock = selectedBlock;
+        if (this.previousSelectedBlock.Row == -1) {
+            this.previousSelectedBlock = this.selectedBlock;
+            return true;
+        } else if (this.game.selectedChain.size() >= 10) {
+            return false;
+        } else {
+            if (this.selectedBlock == this.previousSelectedBlock) {
+                return false;
+            }
+            if (this.game.grid[this.selectedBlock.Row][this.selectedBlock.Col].block.getSelected()) {
+                return false;
+            }
+            int xDist = Math.abs(this.selectedBlock.Row - this.previousSelectedBlock.Row);
+            int yDist = Math.abs(this.selectedBlock.Col - this.previousSelectedBlock.Col);
+            if (xDist > 1 || yDist > 1) {
+                return false;
+            }
+            this.previousSelectedBlock = this.selectedBlock;
             return true;
         }
-        if (selectedBlock == previousSelectedBlock)
-            return false;
-        if (game.grid[selectedBlock.Row][selectedBlock.Col].block.getSelected())
-            return false;
-        int xDist = Math.abs(selectedBlock.Row - previousSelectedBlock.Row);
-        int yDist = Math.abs(selectedBlock.Col - previousSelectedBlock.Col);
-        if (xDist > 1 || yDist > 1)
-            return false;
-        previousSelectedBlock = selectedBlock;
-        return true;
     }
 
     private void findSelectedBlock() {
-        for (int i = 0; i < game.grid.length; ++i) {
-            for (int j = 0; j < game.grid[i].length; ++j) {
-                if (game.grid[i][j].block == null)
-                    continue;
-                if (game.grid[i][j].block.isTouched(X, Y, game.dims.inset))
-                    selectedBlock = new RowColPair(i, j);
-
+        int i = 0;
+        while (i < this.game.grid.length) {
+            int j = 0;
+            while (j < this.game.grid[i].length) {
+                if (this.game.grid[i][j].block != null && this.game.grid[i][j].block.isTouched(this.f85X, this.f86Y, this.game.dims.inset)) {
+                    this.selectedBlock = new RowColPair(i, j);
+                }
+                j++;
             }
+            i++;
         }
     }
 
     private void setSelectedBlock() {
-        int i = selectedBlock.Row;
-        int j = selectedBlock.Col;
-        if (i == -1 || j == -1)
-            return;
-        if (game.grid[i][j].block != null && !game.grid[i][j].block.getSelected()) {
-            game.grid[i][j].block.setSelected(true);
-            game.selectedWord = game.selectedWord.concat(game.grid[i][j].block.letter + "");
-            game.selectedChain.add(new RowColPair(i, j));
+        int i = this.selectedBlock.Row;
+        int j = this.selectedBlock.Col;
+        if (i != -1 && j != -1) {
+            if (!(this.game.grid[i][j].block == null || this.game.grid[i][j].block.getSelected())) {
+                this.game.grid[i][j].block.setSelected(true);
+                this.game.selectedWord = this.game.selectedWord.concat(this.game.grid[i][j].block.letter + BuildConfig.FLAVOR);
+                this.game.grid[i][j].block.setWordPosition(this.game.selectedChain.size());
+                this.game.selectedChain.add(new RowColPair(i, j));
+            }
+            Gdx.input.vibrate(5);
         }
     }
 
     public void giveHint() {
-        if (hintSystem == null)
-            hintSystem = new HintSystem(game);
-        int id = hintSystem.getHint();
-        //check for error codes -1 and -2
-        if (id >= 0) {
-            Block b = game.getBlockByID(id);
-            if (b != null)
-                b.setIsHint(true);
+        if (this.hintSystem == null) {
+            this.hintSystem = new HintSystem(this.game);
         }
+        int id = this.hintSystem.getHint();
+        if (id >= 0) {
+            Block b = this.game.getBlockByID(id);
+            if (b != null) {
+                b.setIsHint(true);
+                return;
+            }
+            return;
+        }
+        this.clearColorState = ClearColorState.TO_RED;
     }
 
-    public HintSystem hintSystem = null;
-
     public void removeHints() {
-        for (int i = 0; i < game.grid.length; ++i) {
-            for (int j = 0; j < game.grid[i].length; ++j) {
-                if (game.grid[i][j].block == null)
-                    continue;
-                game.grid[i][j].block.setIsHint(false);
+        for (int i = 0; i < this.game.grid.length; i++) {
+            for (int j = 0; j < this.game.grid[i].length; j++) {
+                if (this.game.grid[i][j].block != null) {
+                    this.game.grid[i][j].block.setIsHint(false);
+                }
             }
         }
     }
 
+    public Color getClearColor() {
+        return this.clearColor;
+    }
+
+    private void updateClearColor() {
+        Color color;
+        switch (this.clearColorState) {
+            case TO_RED:
+                color = this.clearColor;
+                color.r += 0.2f;
+                if (this.clearColor.r >= 1.0f) {
+                    this.clearColorState = ClearColorState.TO_BLACK;
+                    return;
+                }
+                return;
+            case TO_BLACK:
+                color = this.clearColor;
+                color.r -= 0.05f;
+                if (this.clearColor.r <= 0.0f) {
+                    this.clearColor.set(Color.BLACK);
+                    this.clearColorState = ClearColorState.IDLE;
+                    return;
+                }
+                return;
+            default:
+                return;
+        }
+    }
 }

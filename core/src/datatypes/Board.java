@@ -1,189 +1,161 @@
 package datatypes;
 
+import com.wordblocks.gdx.BuildConfig;
 import com.wordblocks.gdx.LetterBlock;
-
+import helpers.RowColPair;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import utils.Utils;
 
-import helpers.RowColPair;
-
-/**
- * Created by a2558 on 4/25/2016.
- */
 public class Board {
-
     public LetterBlock[][] board;
     int dim;
+    int hintIndex;
     Random rand;
 
-    public List<LetterBlock> ToList()
-    {
-        List<LetterBlock> l = new ArrayList<LetterBlock>();
+    public List<LetterBlock> ToList() {
+        List<LetterBlock> l = new ArrayList();
         int index = 0;
-        for (int row = 0; row < dim; ++row)
-        {
-            for (int col = 0; col < dim; ++col)
-            {
-                board[row][col].id = index++;
-                l.add(board[row][col]);
+        for (int row = 0; row < this.dim; row++) {
+            int col = 0;
+            while (col < this.dim) {
+                int index2 = index + 1;
+                this.board[row][col].id = index;
+                l.add(this.board[row][col]);
+                col++;
+                index = index2;
             }
         }
         return l;
     }
+
     public Board(int dim, long seed) {
         this.dim = dim;
-        board = new LetterBlock[dim][dim];
-
-        rand = new Random(seed);
+        this.board = (LetterBlock[][]) Array.newInstance(LetterBlock.class, new int[]{dim, dim});
+        this.rand = new Random(seed);
     }
 
     public boolean AddAllWords(List<String> level) {
         for (String word : level) {
-            if (!insertWord(word))
+            if (!insertWord(word)) {
                 return false;
+            }
         }
         return isQualityBoard(level);
     }
 
     private boolean isQualityBoard(List<String> level) {
         for (String word : level) {
-            {
-                if (word.length() <= dim && wordEasyToFind(word))
-                    return false;
+            if (word.length() <= this.dim && wordEasyToFind(word)) {
+                return false;
             }
         }
         return true;
-
     }
 
     private boolean wordEasyToFind(String item) {
-        for (int row = 0; row < dim; ++row) {
-            String rowWord = "";
-            for (int col = 0; col < dim; ++col) {
-                rowWord += board[row][col].c;
+        int row;
+        int col;
+        for (row = 0; row < this.dim; row++) {
+            String rowWord = BuildConfig.FLAVOR;
+            for (col = 0; col < this.dim; col++) {
+                rowWord = rowWord + this.board[row][col].f83c;
             }
-            if (rowWord.contains(item) || utils.Utils.ReverseString(rowWord).contains(item))
+            if (rowWord.contains(item) || Utils.ReverseString(rowWord).contains(item)) {
                 return true;
+            }
         }
-        for (int col = 0; col < dim; ++col) {
-            String colWord = "";
-            for (int row = 0; row < dim; ++row) {
-                colWord += board[row][col].c;
+        for (col = 0; col < this.dim; col++) {
+            String colWord = BuildConfig.FLAVOR;
+            for (row = 0; row < this.dim; row++) {
+                colWord = colWord + this.board[row][col].f83c;
             }
-            if (colWord.contains(item) || utils.Utils.ReverseString(colWord).contains(item))
+            if (colWord.contains(item) || Utils.ReverseString(colWord).contains(item)) {
                 return true;
+            }
         }
         return false;
     }
 
-
     public void reset() {
-        hintIndex = dim * dim - 1;
-        for (int row = 0; row < dim; ++row) {
-            for (int col = 0; col < dim; ++col) {
-                board[row][col] = null;
+        this.hintIndex = (this.dim * this.dim) - 1;
+        for (int row = 0; row < this.dim; row++) {
+            for (int col = 0; col < this.dim; col++) {
+                this.board[row][col] = null;
             }
         }
     }
 
-//    public void print() {
-//        //row
-//        for (int row = dim - 1; row >= 0; --row) {
-//            //col
-//            for (int col = 0; col < dim; ++col) {
-//                if (board[row,col]!=null)
-//                System.Console.Write(board[row, col].c);
-//                else
-//                System.Console.Write(".");
-//            }
-//            System.console().
-//        }
-//        System.Console.WriteLine();
-//    }
-
     private int RandomNumber(int min, int count) {
-        int n = rand.nextInt(count - min) + min;
-        return n;
+        return this.rand.nextInt(count - min) + min;
     }
 
     private boolean insertWord(String word) {
-        //start with a random location
-        RowColPair cell = new RowColPair(RandomNumber(0, dim), RandomNumber(0, dim));
-        //we're building the level from the final state to the initial state, so iterate over the letters in reverse order
-        for (int i = word.length() - 1; i >= 0; --i) {
+        RowColPair cell = new RowColPair(RandomNumber(0, this.dim), RandomNumber(0, this.dim));
+        for (int i = word.length() - 1; i >= 0; i--) {
             cell = getNextCell(cell, word);
-            //Got into a bad state, so bail and start over!
-            if (cell == null)
+            if (cell == null) {
                 return false;
+            }
             insertCharacter(word.charAt(i), word, cell);
         }
         return true;
     }
 
-
-
-    int hintIndex;
-
     private void insertCharacter(char ch, String word, RowColPair cell) {
-        if (board[cell.Row][cell.Col] != null) {
-            //raise the characters to make room
-            int curRow = dim - 1;
+        if (this.board[cell.Row][cell.Col] != null) {
+            int curRow = this.dim - 1;
             while (curRow != cell.Row) {
-                if (board[curRow][cell.Col] == null && board[curRow - 1][cell.Col] != null) {
-                    board[curRow][cell.Col] = board[curRow - 1][cell.Col];
-                    board[curRow - 1][cell.Col] = null;
+                if (this.board[curRow][cell.Col] == null && this.board[curRow - 1][cell.Col] != null) {
+                    this.board[curRow][cell.Col] = this.board[curRow - 1][cell.Col];
+                    this.board[curRow - 1][cell.Col] = null;
                 }
-                --curRow;
+                curRow--;
             }
         }
         LetterBlock lb = new LetterBlock();
-        lb.c = ch;
-        lb.h = hintIndex--;
+        lb.f83c = ch;
+        int i = this.hintIndex;
+        this.hintIndex = i - 1;
+        lb.f84h = i;
         lb.word = word;
-
-        board[cell.Row][cell.Col] = lb;
+        this.board[cell.Row][cell.Col] = lb;
     }
 
     private RowColPair getNextCell(RowColPair cell, String word) {
+        RowColPair newCell;
         int count = 0;
-        while (++count < 50) {
-            RowColPair newCell = getRandomAdjacentCell(cell);
-            if (cellIsValid(newCell, word))
-                return newCell;
-        }
-        return null;
+        do {
+            count++;
+            if (count >= 50) {
+                return null;
+            }
+            newCell = getRandomAdjacentCell(cell);
+        } while (!cellIsValid(newCell, word));
+        return newCell;
     }
 
     private boolean cellIsValid(RowColPair cell, String word) {
-        //check it's inside grid
-        if (cell.Row >= dim || cell.Row < 0 || cell.Col >= dim || cell.Col < 0)
+        if (cell.Row >= this.dim || cell.Row < 0 || cell.Col >= this.dim || cell.Col < 0) {
             return false;
-
-        //check there is no null space immediately below the cell
-        // -- you can only build up on top of other blocks
-        if (cell.Row > 0 && board[cell.Row - 1][cell.Col] == null)
+        }
+        if ((cell.Row > 0 && this.board[cell.Row - 1][cell.Col] == null) || this.board[this.dim - 1][cell.Col] != null) {
             return false;
-
-        //can push up ONLY if there is space - if top space is null, then there's room.  If not, return false
-        if (board[dim - 1][cell.Col] != null)
-            return false;
-        //AND if no Cells above contain the current word (or it will be unsolvable!)
-        for (int row = dim - 1; row >= cell.Row; --row) {
-            //null cells are good for business, move along
-            if (board[row][cell.Col] == null)
-                continue;
-            //not valid!
-            if (board[row][cell.Col].word.equals(word))
+        }
+        int row = this.dim - 1;
+        while (row >= cell.Row) {
+            if (this.board[row][cell.Col] != null && this.board[row][cell.Col].word.equals(word)) {
                 return false;
+            }
+            row--;
         }
         return true;
     }
 
-    //returns 1 of 9 possible locations
     private RowColPair getRandomAdjacentCell(RowColPair cell) {
-        int pos = RandomNumber(0, 9);
-        switch (pos) {
+        switch (RandomNumber(0, 9)) {
             case 0:
                 return new RowColPair(cell.Row - 1, cell.Col - 1);
             case 1:
@@ -206,7 +178,4 @@ public class Board {
                 return null;
         }
     }
-    //SOLVER FUNCTIONS
-
-
 }

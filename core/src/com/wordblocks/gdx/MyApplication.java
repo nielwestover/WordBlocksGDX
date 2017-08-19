@@ -1,76 +1,88 @@
 package com.wordblocks.gdx;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.utils.Json;
-
+import com.badlogic.gdx.utils.TimeUtils;
+import datatypes.Board;
+import datatypes.Level;
+import datatypes.LevelPack;
 import java.util.ArrayList;
 import java.util.List;
+import utils.Utils;
 
-
-/**
- * Created by a2558 on 2/21/2016.
- */
 public class MyApplication {
+    private static Level curLevel;
+    public static int curLevelIndex = 7;
+    public static int curPackIndex = 0;
+    private static List<LevelPack> levelPacks = new ArrayList();
+    private static Preferences preferences;
+    public static long randomSeed = 0;
 
-    private static List<datatypes.LevelPack> levelPacks = new ArrayList<datatypes.LevelPack>();
-    //private static List<Level> levels = new ArrayList<Level>();
-
-    private static datatypes.Level curLevel;
-    public static int curPackIndex = 0;////24;
-    public static int curLevelIndex = 0;//19;
-
-    public static List<datatypes.LevelPack> packs() {
+    public static List<LevelPack> packs() {
         if (levelPacks == null || levelPacks.size() == 0) {
-           loadAllLevels();
+            loadAllLevels();
         }
         return levelPacks;
     }
 
-    public static datatypes.Level getCurLevel() {
+    public static Level getCurLevel() {
         if (curLevel == null) {
-            curLevel = generateLevel(packs().get(curPackIndex).levels.get(curLevelIndex), curPackIndex * 100 + curLevelIndex);
+            curLevel = generateLevel((List) ((LevelPack) packs().get(curPackIndex)).levels.get(curLevelIndex), (randomSeed + ((long) (curPackIndex * 100))) + ((long) curLevelIndex));
         }
         return curLevel;
     }
 
-    //returns success - true or false
     public static boolean setCurLevel(int level) {
-        if (level >= 0 && level < packs().get(curPackIndex).levels.size()) {
-            curLevelIndex = level;
-            curLevel = generateLevel(packs().get(curPackIndex).levels.get(curLevelIndex), curPackIndex * 100 + curLevelIndex);
-            return true;
+        if (level < 0 || level >= ((LevelPack) packs().get(curPackIndex)).levels.size()) {
+            return false;
         }
-        return false;
+        curLevelIndex = level;
+        curLevel = generateLevel((List) ((LevelPack) packs().get(curPackIndex)).levels.get(curLevelIndex), (randomSeed + ((long) (curPackIndex * 100))) + ((long) curLevelIndex));
+        return true;
     }
 
     public static boolean incrementCurLevel() {
-        if (curLevelIndex + 1 >= 20) {
-            if (curPackIndex+1 >= packs().size())
-                return false;
-            curPackIndex++;
-            return setCurLevel(0);
+        if (curLevelIndex + 1 < 20) {
+            return setCurLevel(curLevelIndex + 1);
         }
-        return setCurLevel(curLevelIndex + 1);
+        if (curPackIndex + 1 >= packs().size()) {
+            return false;
+        }
+        curPackIndex++;
+        return setCurLevel(0);
     }
 
     public static void loadAllLevels() {
-        //levelPacks = new Json().fromJson(ArrayList.class, datatypes.LevelPack.class, Gdx.files.internal("completePackList.json"));//gson.fromJson(br, new TypeToken<List<JsonLog>>(){}.getType());
-        levelPacks = new Json().fromJson(ArrayList.class, datatypes.LevelPack.class, Gdx.files.internal("11Levels.json"));//gson.fromJson(br, new TypeToken<List<JsonLog>>(){}.getType());
+        levelPacks = (List) new Json().fromJson(ArrayList.class, LevelPack.class, Gdx.files.internal("completePackList.json"));
     }
 
-    static datatypes.Level generateLevel(List<String> level, int seed) {
-        int dim = utils.Utils.getDimension(level);
-        datatypes.Board board = new datatypes.Board(dim, seed);
-
-        while (true) {
+    static Level generateLevel(List<String> level, long seed) {
+        Board board = new Board(Utils.getDimension(level), seed);
+        do {
             board.reset();
-            if (board.AddAllWords(level)) {
-                datatypes.Level l = new datatypes.Level();
-                l.board = board.ToList();
-                l.words = level;
-                return l;
-            }
+        } while (!board.AddAllWords(level));
+        Level l = new Level();
+        l.board = board.ToList();
+        l.words = level;
+        return l;
+    }
+
+    public static Preferences getPreferences() {
+        if (preferences == null) {
+            preferences = Gdx.app.getPreferences("wordPrefs");
+        }
+        return preferences;
+    }
+
+    public static void loadProfile() {
+        curPackIndex = getPreferences().getInteger("pack");
+        curLevelIndex = getPreferences().getInteger("level");
+        randomSeed = getPreferences().getLong("randomSeed");
+        if (randomSeed == 0) {
+            randomSeed = TimeUtils.millis();
+            getPreferences().putLong("randomSeed", randomSeed);
+            getPreferences().flush();
         }
     }
 }
-
