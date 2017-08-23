@@ -61,7 +61,7 @@ public class Board {
         for (row = 0; row < this.dim; row++) {
             String rowWord = BuildConfig.FLAVOR;
             for (col = 0; col < this.dim; col++) {
-                rowWord = rowWord + this.board[row][col].f83c;
+                rowWord = rowWord + this.board[row][col].c;
             }
             if (rowWord.contains(item) || Utils.ReverseString(rowWord).contains(item)) {
                 return true;
@@ -70,7 +70,7 @@ public class Board {
         for (col = 0; col < this.dim; col++) {
             String colWord = BuildConfig.FLAVOR;
             for (row = 0; row < this.dim; row++) {
-                colWord = colWord + this.board[row][col].f83c;
+                colWord = colWord + this.board[row][col].c;
             }
             if (colWord.contains(item) || Utils.ReverseString(colWord).contains(item)) {
                 return true;
@@ -116,10 +116,10 @@ public class Board {
             }
         }
         LetterBlock lb = new LetterBlock();
-        lb.f83c = ch;
+        lb.c = ch;
         int i = this.hintIndex;
         this.hintIndex = i - 1;
-        lb.f84h = i;
+        lb.h = i;
         lb.word = word;
         this.board[cell.Row][cell.Col] = lb;
     }

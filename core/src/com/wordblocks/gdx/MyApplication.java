@@ -13,8 +13,8 @@ import utils.Utils;
 
 public class MyApplication {
     private static Level curLevel;
-    public static int curLevelIndex = 7;
-    public static int curPackIndex = 0;
+    public static int curLevelIndex = 19;
+    public static int curPackIndex = 19;
     private static List<LevelPack> levelPacks = new ArrayList();
     private static Preferences preferences;
     public static long randomSeed = 0;
@@ -57,7 +57,7 @@ public class MyApplication {
         levelPacks = (List) new Json().fromJson(ArrayList.class, LevelPack.class, Gdx.files.internal("completePackList.json"));
     }
 
-    static Level generateLevel(List<String> level, long seed) {
+    private static Level generateLevel(List<String> level, long seed) {
         Board board = new Board(Utils.getDimension(level), seed);
         do {
             board.reset();
@@ -76,8 +76,8 @@ public class MyApplication {
     }
 
     public static void loadProfile() {
-        curPackIndex = getPreferences().getInteger("pack");
-        curLevelIndex = getPreferences().getInteger("level");
+        curPackIndex = 22;//getPreferences().getInteger("pack");
+        curLevelIndex = 19;//getPreferences().getInteger("level");
         randomSeed = getPreferences().getLong("randomSeed");
         if (randomSeed == 0) {
             randomSeed = TimeUtils.millis();

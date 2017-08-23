@@ -100,7 +100,7 @@ public class WordBlocksRenderer {
         } else {
             fpsFont.setColor(1.0f, 0.0f, 0.0f, 1.0f);
         }
-        fpsFont.draw(this.spriteBatch, "FPS: " + fps, x, y);
+        //fpsFont.draw(this.spriteBatch, "FPS: " + fps, x, y);
         this.wbc.fontCurWord.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         this.levelString = (MyApplication.curPackIndex + 1) + " - " + (MyApplication.curLevelIndex + 1) + BuildConfig.FLAVOR;
         this.wbc.fontCurWord.getData().setScale(0.8f);
@@ -145,7 +145,7 @@ public class WordBlocksRenderer {
     private void drawBlocks(Game game) {
         int i;
         int j;
-        this.logger.log();
+        //this.logger.log();
         if (this.wbc.hintSystem != null && this.wbc.hintSystem.getHintIndex() > 0) {
             HintLoop hintLoop = Block.hintLoop;
             HintLoop.loopHintColors();

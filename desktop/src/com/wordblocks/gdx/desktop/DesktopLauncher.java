@@ -7,8 +7,8 @@ import com.wordblocks.gdx.WordBlocksGDX;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.width = 800;
-		config.height = 1400;
+		config.width = 600;//800;
+		config.height = 950;
 		new LwjglApplication(new WordBlocksGDX(), config);
 	}
 }

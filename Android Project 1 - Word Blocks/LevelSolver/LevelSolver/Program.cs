@@ -11,39 +11,46 @@ namespace LevelSolver
 {
 	class Program
 	{
-		static void Main(string[] args)
-		{
-			Stopwatch sw = new Stopwatch();
-			sw.Start();
-			string levels = File.ReadAllText(@"D:\allBoards.json");
-			//string levels = File.ReadAllText(@"D:\solverBoards.json");
-			List<Level> allLevels = JsonConvert.DeserializeObject< List < Level >> (levels);
-			List<Stats> allStats = new List<Stats>();
-			int levelNum = 0;
-			foreach (var level in allLevels)
-			{
-				++levelNum;
-				Solver s = new Solver();
-				Board b = new Board(level);
 
-				List<int> solution = s.solveBoard(b);
-				Stats stats = s.stats;
-				stats.level = levelNum;
-				allStats.Add(stats);
-				Console.Write("Length: " + level.board.Count + "  Words: ");
-				foreach (var item in level.words)
-				{
-					Console.Write(item + " ");
-				}
-				//foreach (var item in solution)
-				//{
-				//	Console.Write(item + " ");
-				//}
-				Console.WriteLine();
-			}
-			File.WriteAllText(@"D:\allStats.json", JsonConvert.SerializeObject(allStats));
-			Console.WriteLine(sw.ElapsedMilliseconds / 1000.0 + " seconds");
-			Console.ReadLine();		
+        private static void SolveTime(Level level, Solver s, string name)
+        {
+            Console.WriteLine("\r\n");
+            Console.WriteLine(name);
+            double elapsed = 0;
+            int iterations = 5;
+            for (int i = 0; i < iterations; ++i)
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+
+                Board b = new Board(level);
+                b.EmptyToNullCell();
+                List<int> solution = s.solveBoard(b);
+
+                double el = sw.ElapsedMilliseconds / 1000.0;
+                elapsed += el;
+                if (solution == null)
+                    Console.WriteLine(el + " seconds" + " - NO SOLUTION");
+                else
+                    Console.WriteLine(el + " seconds");
+                sw.Restart();
+            }
+            Console.WriteLine("TOTAL: " + elapsed + " seconds");
+            Console.WriteLine("AVG: " + elapsed/iterations + " seconds");
+        }
+
+        static void Main(string[] args)
+		{
+
+            //string levels = File.ReadAllText(@"D:\solverTest.json");
+            string levels = File.ReadAllText(@"D:\solverTestPart.json");
+            List<Level> allLevels = JsonConvert.DeserializeObject< List < Level >> (levels);
+			List<Stats> allStats = new List<Stats>();
+            //SolveTime(allLevels[0], new SolverShuffle(), "SHUFFLED");
+            SolveTime(allLevels[0], new SolverPerm(), "PERMUTATIONS");
+            //SolveTime(allLevels[0], new SolverPaths(), "SHUFFLED WITH HOR PATHS");
+
+            Console.ReadLine();		
 		}
 	}
 }

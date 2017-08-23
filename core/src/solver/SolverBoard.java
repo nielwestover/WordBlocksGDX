@@ -1,10 +1,14 @@
 package solver;
 
 import com.wordblocks.gdx.LetterBlock;
+
 import datatypes.Level;
 import helpers.RowColPair;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+
+import static java.lang.System.in;
 
 public class SolverBoard {
     LetterBlock[][] board;
@@ -64,7 +68,7 @@ public class SolverBoard {
             for (int col = -1; col < 2; col++) {
                 int candRow = cell.Row + row;
                 int candCol = cell.Col + col;
-                if (candRow >= 0 && candRow < this.dim && candCol >= 0 && candCol < this.dim && this.board[candRow][candCol] != null && this.board[candRow][candCol].f83c == candidate.charAt(0) && !this.solveOrder.contains(Integer.valueOf(this.board[candRow][candCol].id))) {
+                if (candRow >= 0 && candRow < this.dim && candCol >= 0 && candCol < this.dim && this.board[candRow][candCol] != null && this.board[candRow][candCol].c == candidate.charAt(0) && !this.solveOrder.contains(Integer.valueOf(this.board[candRow][candCol].id))) {
                     locs.add(new RowColPair(candRow, candCol));
                 }
             }
@@ -74,16 +78,12 @@ public class SolverBoard {
 
     public ArrayList<RowColPair> getLetterLocations(String letter) {
         ArrayList<RowColPair> locs = new ArrayList();
-        int row = 0;
-        while (row < this.dim) {
-            int col = 0;
-            while (col < this.dim) {
-                if (this.board[row][col] != null && this.board[row][col].f83c == letter.charAt(0)) {
+        for (int row = 0; row < dim; ++row) {
+            for (int col = 0; col < dim; ++col) {
+                if (this.board[row][col] != null && this.board[row][col].c == letter.charAt(0)) {
                     locs.add(new RowColPair(row, col));
                 }
-                col++;
             }
-            row++;
         }
         return locs;
     }
@@ -94,33 +94,65 @@ public class SolverBoard {
     }
 
     public void dropWords() {
-        int col = 0;
-        int row = 0;
-        while (col < this.dim) {
-            while (row < this.dim) {
+        for (int col = 0; col < this.dim; ++col)
+        {
+            for (int row = 0; row < this.dim; ++row)
+            {
                 if (this.board[row][col] != null && this.solveOrder.contains(Integer.valueOf(this.board[row][col].id))) {
                     this.board[row][col] = null;
                 }
-                row++;
             }
-            col++;
         }
         boolean blockDropped = true;
         while (blockDropped) {
             blockDropped = false;
-            col = 0;
-            while (col < this.dim) {
-                row = 0;
-                while (row < this.dim - 1) {
+            for (int col = 0; col < this.dim; ++col)
+            {
+                for (int row = 0; row < this.dim - 1; ++row)
+                {
                     if (this.board[row][col] == null && row + 1 < this.dim && this.board[row + 1][col] != null) {
                         this.board[row][col] = this.board[row + 1][col];
                         this.board[row + 1][col] = null;
                         blockDropped = true;
                     }
-                    row++;
                 }
-                col++;
             }
         }
+    }
+
+    public void printBoard() {
+        //System.Console.WriteLine("******************************");
+        for (int i = 0; i < words.size(); ++i) {
+            System.out.print(words.get(i) + " ");
+        }
+        System.out.println();
+        //row
+        for (int row = dim - 1; row >= 0; --row) {
+            //col
+            for (int col = 0; col < dim; ++col) {
+                if (board[row][col] != null)
+                    if (curCell != null && curCell.equals(new RowColPair(row, col)))
+                        System.out.print("*" + board[row][col].c + "*");
+                    else if (solveOrder.indexOf(board[row][col].id) >= 0)
+                        System.out.print("-" + board[row][col].c + "-");
+                    else
+                        System.out.print(" " + board[row][col].c + " ");
+                else
+                    System.out.print(" . ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public void print(int iter) {
+        System.out.println("Iteration: " + iter);
+        printBoard();
+        if (curCell != null)
+            System.out.println("CurCell: " + curCell.Row + ", " + curCell.Col);
+        System.out.println("CurLetterIndex: " + curLetterIndex);
+        System.out.println("CurWord: " + curWord);
+        //System.out.println("CurLetter: " + words.get(0).substring(0, 1));
+        System.out.println();
     }
 }

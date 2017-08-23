@@ -3,9 +3,14 @@ package solver;
 import com.badlogic.gdx.Gdx;
 import datatypes.Level;
 import helpers.RowColPair;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+
 import utils.Utils;
 
 public class LevelSolver {
@@ -15,17 +20,33 @@ public class LevelSolver {
         return new LevelSolver().solveBoard(new SolverBoard(level));
     }
 
+    void permute(ArrayList<String> arr, int k){
+        if (permutations.size() >= 500)
+            return;
+        for(int i = k; i < arr.size(); i++){
+            Collections.swap(arr, i, k);
+            permute(arr, k+1);
+            Collections.swap(arr, k, i);
+        }
+        if (k == arr.size() -1){
+            permutations.add(new ArrayList<String>(arr));
+        }
+    }
+    ArrayList<List<String>> permutations;
     private ArrayList<Integer> solveBoard(SolverBoard b) {
         int count;
         ArrayList<Integer> solveOrder;
-        ArrayList<String> shuffledWords = new ArrayList(b.words);
+        ArrayList<String> words = new ArrayList(b.words);
+        Collections.reverse(words);
+        permutations = new ArrayList<List<String>>();
+        permute(words, 0);
         int i = 0;
         while (true) {
             count = i + 1;
-            if (i < 1000) {
-                Collections.shuffle(shuffledWords);
+            if (i < permutations.size()) {
+                List<String> curPerm = permutations.get(i);
                 SolverBoard copy = b.copy();
-                copy.words = new ArrayList(shuffledWords);
+                copy.words = new ArrayList<String>(curPerm);
                 copy.curCell = null;
                 solveOrder = solve(copy);
                 if (solveOrder != null) {
@@ -44,13 +65,46 @@ public class LevelSolver {
         Gdx.app.log("MyTag", "Max count---: " + maxLoopCount);
         return solveOrder;
     }
-
+//    private ArrayList<Integer> solveBoard(SolverBoard b) {
+//        int count;
+//        ArrayList<Integer> solveOrder;
+//        ArrayList<String> shuffledWords = new ArrayList(b.words);
+//        int i = 0;
+//        while (true) {
+//            count = i + 1;
+//            if (i < 100) {
+//                System.out.println("");
+//                //Collections.shuffle(shuffledWords);
+//                //Collections.reverse(shuffledWords);
+//                SolverBoard copy = b.copy();
+//                copy.words = new ArrayList(shuffledWords);
+//                copy.curCell = null;
+//                solveOrder = solve(copy);
+//                if (solveOrder != null) {
+//                    break;
+//                }
+//                i = count;
+//            } else {
+//                Gdx.app.log("MyTag", "NOT FOUND: Loop count: " + count);
+//                return null;
+//            }
+//        }
+//        Gdx.app.log("MyTag", "Loop count: " + count);
+//        if (count > maxLoopCount) {
+//            maxLoopCount = count;
+//        }
+//        Gdx.app.log("MyTag", "Max count---: " + maxLoopCount);
+//        return solveOrder;
+//    }
+    int iterCount = 0;
     public ArrayList<Integer> solve(SolverBoard b) {
-        if (((String) b.words.get(0)).isEmpty()) {
+        if (b.words.get(0).length() == 0) {
             b.words.remove(0);
             b.curCell = null;
             b.dropWords();
         }
+        //iterCount++;
+        //b.print(iterCount);
         if (b.words.size() == 0) {
             return b.solveOrder;
         }

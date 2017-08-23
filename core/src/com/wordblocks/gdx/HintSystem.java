@@ -40,9 +40,9 @@ public class HintSystem {
         if (!canGetHint()) {
             return -2;
         }
-        if (this.game.blocksLeft() == this.dim) {
-            return getUnsolvedHint();
-        }
+        //if (this.game.blocksLeft() == this.dim) {
+        //    return getUnsolvedHint();
+        //}
         if (this.solveOrder == null && !this.unsolvable) {
             Level curState = new Level();
             curState.words = this.game.remainingWords();

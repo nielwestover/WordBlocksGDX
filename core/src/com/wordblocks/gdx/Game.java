@@ -69,8 +69,8 @@ public class Game {
         for (int j = this.grid.length - 1; j >= 0; j--) {
             for (int i = 0; i < this.grid[j].length; i++) {
                 Block block = new Block(((LetterBlock) board.get(index)).id, this);
-                block.letter = ((LetterBlock) board.get(index)).f83c;
-                block.hintIndex = ((LetterBlock) board.get(index)).f84h;
+                block.letter = ((LetterBlock) board.get(index)).c;
+                block.hintIndex = ((LetterBlock) board.get(index)).h;
                 this.grid[i][j].block = block;
                 index++;
             }
@@ -175,7 +175,7 @@ public class Game {
                 } else {
                     l = new LetterBlock();
                     l.id = this.grid[i][j].block.id;
-                    l.f83c = this.grid[i][j].block.letter;
+                    l.c = this.grid[i][j].block.letter;
                 }
                 board.add(l);
             }
