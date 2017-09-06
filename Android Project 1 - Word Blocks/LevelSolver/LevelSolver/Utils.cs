@@ -74,20 +74,42 @@ namespace LevelSolver
 			}
 			return perms;
 		}
+        public static IList<T> Swap<T>(this IList<T> list, int indexA, int indexB)
+        {
+            T tmp = list[indexA];
+            list[indexA] = list[indexB];
+            list[indexB] = tmp;
+            return list;
+        }
+        public static void permute(List<string> arr, int k, ref List<List<string>> output)
+        {
+            for (int i = k; i < arr.Count; i++)
+            {
+                Swap(arr, i, k);
+                permute(arr, k + 1, ref output);
+                Swap(arr, k, i);
+            }
+            if (k == arr.Count - 1)
+            {
+                output.Add(new List<string>(arr));
+            }
+        }
 
-		internal static Board GetNewBoardState(Board board, RowColPair item)
+        internal static Board GetNewBoardState(Board board, RowColPair item, bool newWord = false)
 		{
 			//Make a copy of the board we can manipulate
 			Board b = board.copy();
 
 			//Remove the first letter and add it to the solve order
 			b.words[0] = board.words[0].Remove(0, 1);
-			b.solveOrder.Add(board.getCell(item.Row, item.Col).id);
-
+            var cell = board.getCell(item.Row, item.Col);
+            b.solveOrder.Add(cell.id);
+            if (b.solveOrder.Count > Board.maxSolveLength)
+                Board.maxSolveLength = b.solveOrder.Count;
 			//Make curCell point to location of letter we just processed
 			b.curCell = item;
 
 			return b;
-		}
+		}        
 	}
 }

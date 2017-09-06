@@ -6,16 +6,7 @@ using System.Diagnostics;
 namespace LevelSolver
 {
 
-    public class Stats
-    {
-        public int level;
-        public int boardSize;
-        public int numWords;
-        public int permRecursions = 0;
-        public long timeForPermutation_ms;
-        public int numPermutations;
-        public int totalRecursions = 0;
-    }
+
     public class Solver
     {
         public virtual List<int> solveBoard(Board b)

@@ -5,7 +5,7 @@ import com.badlogic.gdx.Screen;
 
 public class WordBlocksGDX extends Game {
     public void create() {
-        setScreen(new GameScreen(this));
+        setScreen(new GroupChooser(this));
     }
 
     public void dispose() {

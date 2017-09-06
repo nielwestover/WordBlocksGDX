@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,9 +27,57 @@ namespace LevelSolver
         }
     }
 
+    public class LevelPack
+    {
+        public List<List<string>> levels { get; set; }
+    }
+    public class LevelList
+    {
+        public List<string> words
+        {
+            get; set;
+        }
+
+    }
     public class Board
     {
+        public string printBoardSimple()
+        {
+            string str = "";            
+            //row
+            for (int row = dim - 1; row >= 0; --row)
+            {
+                //col
+                for (int col = 0; col < dim; ++col)
+                {
+                    if (board[row, col] != null)
+                        if (curCell != null && curCell.equals(row, col))
+                            str += ("*" + board[row, col].c + "*");
+                        else if (solveOrder.Contains(board[row, col].id))
+                            str += ("-" + board[row, col].c + "-");
+                        else
+                            str += ("" + board[row, col].c + "");
+                    else
+                        str += (" ");
+                }
+            }
+            foreach (var item in words)
+            {
+                str += item + "";
+            }
+            return str;
+        }
+        public int getBoardHash()
+        {           
+            string str = printBoardSimple();
+            return str.GetHashCode();
+        }
+        public override int GetHashCode()
+        {
+            return getBoardHash();
+        }
         public List<int> solveOrder = new List<int>();
+        public List<string> solveChars = new List<string>();
         public List<string> words;
         public RowColPair curCell;
 
@@ -52,6 +101,7 @@ namespace LevelSolver
             Array.Copy(board, b.board, board.Length);
             b.words = words.Clone().ToList();
             b.solveOrder = new List<int>(solveOrder);
+            b.solveChars = new List<string>(solveChars);
             if (curCell == null)
                 b.curCell = null;
             else
@@ -67,6 +117,8 @@ namespace LevelSolver
         internal string curWord;
         internal int curLetterIndex;
 
+        
+
         public Cell getCell(int row, int col)
         {
             if (row < 0 || row >= dim || col < 0 || col >= dim)
@@ -74,6 +126,7 @@ namespace LevelSolver
             return board[row, col];
         }
 
+        public static int maxSolveLength = 0;
 
         public Board(Level level)
         {
@@ -335,14 +388,15 @@ namespace LevelSolver
             }
         }
 
-        public void printBoard()
+        public string printBoard(bool toScreen = true)
         {
+            string str = "";
             //System.Console.WriteLine("******************************");
             foreach (var item in words)
             {
-                System.Console.Write(item + " ");
+                str += item + " ";
             }
-            System.Console.WriteLine();
+            str += Environment.NewLine;
             //row
             for (int row = dim - 1; row >= 0; --row)
             {
@@ -351,17 +405,20 @@ namespace LevelSolver
                 {
                     if (board[row, col] != null)
                         if (curCell != null && curCell.equals(row, col))
-                            System.Console.Write("*" + board[row, col].c + "*");
+                            str += ("*" + board[row, col].c + "*");
                         else if (solveOrder.Contains(board[row, col].id))
-                            System.Console.Write("-" + board[row, col].c + "-");
+                            str += ("-" + board[row, col].c + "-");
                         else
-                            System.Console.Write(" " + board[row, col].c + " ");
+                            str += (" " + board[row, col].c + " ");
                     else
-                        System.Console.Write("   ");
+                        str += ("   ");
                 }
-                System.Console.WriteLine();
+                str += Environment.NewLine;
             }
-            System.Console.WriteLine();
+            str += Environment.NewLine;
+            if (toScreen)
+                System.Console.WriteLine(str);
+            return str;
         }
 
         public void print(int iter)

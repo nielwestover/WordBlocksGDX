@@ -12,6 +12,9 @@ import java.util.List;
 import utils.Utils;
 
 public class MyApplication {
+    public MyApplication(){
+        loadProfile();
+    }
     private static Level curLevel;
     public static int curLevelIndex = 19;
     public static int curPackIndex = 19;
@@ -76,7 +79,7 @@ public class MyApplication {
     }
 
     public static void loadProfile() {
-        curPackIndex = 22;//getPreferences().getInteger("pack");
+        curPackIndex = 19;//getPreferences().getInteger("pack");
         curLevelIndex = 19;//getPreferences().getInteger("level");
         randomSeed = getPreferences().getLong("randomSeed");
         if (randomSeed == 0) {

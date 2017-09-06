@@ -21,8 +21,8 @@ public class LevelSolver {
     }
 
     void permute(ArrayList<String> arr, int k){
-        if (permutations.size() >= 500)
-            return;
+        //if (permutations.size() >= 500)
+        //    return;
         for(int i = k; i < arr.size(); i++){
             Collections.swap(arr, i, k);
             permute(arr, k+1);
@@ -37,12 +37,15 @@ public class LevelSolver {
         int count;
         ArrayList<Integer> solveOrder;
         ArrayList<String> words = new ArrayList(b.words);
-        Collections.reverse(words);
+        //Collections.reverse(words);
         permutations = new ArrayList<List<String>>();
         permute(words, 0);
+        Collections.shuffle(permutations);
         int i = 0;
         while (true) {
             count = i + 1;
+            if (count % 10 == 0)
+                System.out.println(count);
             if (i < permutations.size()) {
                 List<String> curPerm = permutations.get(i);
                 SolverBoard copy = b.copy();

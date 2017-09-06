@@ -28,7 +28,7 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
     ShapeRenderer shapeRenderer;
     Skin skin;
     Stage stage;
-    long f119t;
+    long curMillis;
     Viewport viewport;
     private float width;
     public WordBlocksController wordBlocksController;
@@ -70,10 +70,10 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
         Gdx.gl.glClearColor(c.r, c.g, c.b, c.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.gl.glEnable(GL20.GL_BLEND);
-        this.f119t = TimeUtils.millis();
-        if (this.f119t >= this.nextGameTick && !this.paused) {
+        this.curMillis = TimeUtils.millis();
+        if (this.curMillis >= this.nextGameTick && !this.paused) {
             this.wordBlocksController.update();
-            this.nextGameTick = this.f119t + 16;
+            this.nextGameTick = this.curMillis + 16;
         }
         if (!this.paused) {
             this.wordBlocksRenderer.draw(this.wordBlocksController);

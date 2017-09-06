@@ -43,7 +43,6 @@ public class WordBlocksController {
         this.Overlord = overlord;
         this.width = width;
         this.height = height;
-        MyApplication.loadProfile();
     }
 
     float getBlockFontScale() {

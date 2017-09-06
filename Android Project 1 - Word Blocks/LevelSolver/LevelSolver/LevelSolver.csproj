@@ -50,6 +50,7 @@
     <Compile Include="Board.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SolverPermsOnFly.cs" />
     <Compile Include="SolverPaths.cs" />
     <Compile Include="SolverShuffle.cs" />
     <Compile Include="Solver.cs" />
