@@ -4,8 +4,14 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 
 public class WordBlocksGDX extends Game {
+    GroupChooser groupChooser;
+    LevelChooser levelChooser;
     public void create() {
-        setScreen(new GroupChooser(this));
+        if (groupChooser == null)
+            groupChooser = new GroupChooser(this);
+        if (levelChooser == null)
+            levelChooser = new LevelChooser(this);
+        setScreen(groupChooser);
     }
 
     public void dispose() {

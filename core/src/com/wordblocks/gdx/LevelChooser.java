@@ -1,7 +1,6 @@
 package com.wordblocks.gdx;
 
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -11,28 +10,36 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-public class GroupChooser implements Screen {
+public class LevelChooser implements Screen {
     private Stage stage;
     private Table container;
     private WordBlocksGDX WBOverlord;
     private BitmapFont titleFont;
     private BitmapFont groupFont;
+    private int group = 0;
 
-    public GroupChooser(WordBlocksGDX overlord) {
+    public void SetCurGroup(int group) {
+        this.group = group;
+    }
+
+    public LevelChooser(WordBlocksGDX overlord) {
         this.WBOverlord = overlord;
+    }
+
+    public void render() {
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.draw();
     }
 
     private void initFonts() {
@@ -71,8 +78,6 @@ public class GroupChooser implements Screen {
         final ScrollPane scroll = new ScrollPane(table, skin);
 
         //table.debug();
-
-        table.row();
         Label.LabelStyle titleStyle = new Label.LabelStyle(titleFont, Color.WHITE);
         TextButtonStyle groupStyle = new TextButtonStyle();
         groupStyle.up = skin.getDrawable("default-round-large");
@@ -81,12 +86,17 @@ public class GroupChooser implements Screen {
         groupStyle.fontColor = Color.WHITE;
         groupStyle.downFontColor = Color.BLACK;
 
-        Label title = new Label("Select Level Group", titleStyle);
         float dp = Gdx.graphics.getDensity();
+        table.row();
+        Label header = new Label("GROUP " + (group + 1), titleStyle);
+        table.add(header).height(60);
+
+        table.row();
+        Label title = new Label("Select a Level", titleStyle);
         table.add(title).height(dp * 40);
         table.pad(10).defaults().expandX().space(dp * 8);
 
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 20; i++) {
             final int index = i;
             table.row();
             TextButton button = new TextButton(i + 1 + "", groupStyle);
@@ -94,8 +104,9 @@ public class GroupChooser implements Screen {
             table.add(button).height(dp * 60).width(dp * 200);
             button.addListener(new ClickListener() {
                 public void clicked(InputEvent e, float x, float y) {
-                    WBOverlord.levelChooser.SetCurGroup(index);
-                    WBOverlord.setScreen(WBOverlord.levelChooser);
+                    MyApplication.curPackIndex = group;
+                    MyApplication.curLevelIndex = index;
+                    WBOverlord.setScreen(new GameScreen(WBOverlord));
                 }
             });
         }
@@ -103,18 +114,16 @@ public class GroupChooser implements Screen {
         scroll.setFadeScrollBars(true);
         scroll.setSmoothScrolling(true);
         scroll.setScrollbarsOnTop(false);
-        final TextButton backButton = new TextButton(" < Back", skin);
-        /*backButton.addListener(new ChangeListener() {
+        final TextButton backButton = new TextButton(" < Back", groupStyle);
+        backButton.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
-                //go back
+                WBOverlord.setScreen(WBOverlord.groupChooser);
             }
         });
-*/
+
         container.add(scroll).expand().fill().colspan(4);
-        container.row().space(10).padBottom(10);
-
-        //container.add(backButton).left().expandX();
-
+        container.row();
+        container.add(backButton).left().expandX().height(dp * 50);
     }
 
     @Override
