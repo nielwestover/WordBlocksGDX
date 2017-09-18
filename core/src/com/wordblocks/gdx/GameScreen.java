@@ -2,6 +2,7 @@ package com.wordblocks.gdx;
 
 import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -42,6 +43,7 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
     }
 
     public void show() {
+        Gdx.input.setCatchBackKey(true);
         this.camera = new OrthographicCamera((float) Gdx.graphics.getWidth(), (float) Gdx.graphics.getHeight());
         this.viewport = new FitViewport(1200.0f, 2133.0f, this.camera);
         this.viewport.apply();
@@ -77,6 +79,10 @@ public class GameScreen extends WordBlocksInputProcessor implements Screen {
         }
         if (!this.paused) {
             this.wordBlocksRenderer.draw(this.wordBlocksController);
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+            WBOverlord.setScreen(WBOverlord.levelChooser);
         }
     }
 
